@@ -22,4 +22,6 @@ public partial class CouponType
     public int PointsCost { get; set; }
 
     public string? Description { get; set; }
+
+    public virtual ICollection<Coupon> Coupons { get; set; } = new List<Coupon>();
 }

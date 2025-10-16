@@ -1,0 +1,32 @@
+﻿[
+  {
+    "id": 1,
+    "colorName": "經典紅色",
+    "colorCode": "#FF0000",
+    "requiredPoints": 2000,
+    "isActive": true,
+    "createdAt": "2025-10-12T10:32:35.1556759Z",
+    "updatedAt": null,
+    "description": "預設種子資料 - 經典紅色"
+  },
+  {
+    "id": 2,
+    "colorName": "經典藍色",
+    "colorCode": "#0000FF",
+    "requiredPoints": 2000,
+    "isActive": true,
+    "createdAt": "2025-10-12T10:32:35.1556759Z",
+    "updatedAt": null,
+    "description": "預設種子資料 - 經典藍色"
+  },
+  {
+    "id": 3,
+    "colorName": "經典綠色",
+    "colorCode": "#00FF00",
+    "requiredPoints": 2000,
+    "isActive": true,
+    "createdAt": "2025-10-12T10:32:35.1556759Z",
+    "updatedAt": null,
+    "description": "預設種子資料 - 經典綠色"
+  }
+]

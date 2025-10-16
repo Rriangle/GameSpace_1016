@@ -19,5 +19,7 @@ public partial class Evoucher
 
     public DateTime? UsedTime { get; set; }
 
+    public virtual EvoucherType? EvoucherType { get; set; }
+
     public virtual User User { get; set; } = null!;
 }

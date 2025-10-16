@@ -5,13 +5,13 @@ namespace GameSpace.Models
 
 	public partial class GameSpacedatabaseContext : DbContext
 	{
-		public GameSpacedatabaseContext() { 
+		public GameSpacedatabaseContext() {
 		}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
 			if (!optionsBuilder.IsConfigured)
-			{ 
+			{
 			IConfigurationRoot Configuration =
 					new ConfigurationBuilder()
 					.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -20,5 +20,7 @@ namespace GameSpace.Models
 				optionsBuilder.UseSqlServer(Configuration.GetConnectionString("GameSpace"));
 			}
 		}
+
 	}
 }
+

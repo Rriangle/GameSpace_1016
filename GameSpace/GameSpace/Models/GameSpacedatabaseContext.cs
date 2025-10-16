@@ -206,9 +206,9 @@ public partial class GameSpacedatabaseContext : DbContext
 
         modelBuilder.Entity<Coupon>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("Coupon");
+            entity.HasKey(e => e.CouponId).HasName("PK_Coupon");
+
+            entity.ToTable("Coupon");
 
             entity.HasIndex(e => new { e.UserId, e.IsUsed, e.CouponId }, "Coupon_index_26");
 
@@ -232,9 +232,9 @@ public partial class GameSpacedatabaseContext : DbContext
 
         modelBuilder.Entity<CouponType>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("CouponType");
+            entity.HasKey(e => e.CouponTypeId).HasName("PK_CouponType");
+
+            entity.ToTable("CouponType");
 
             entity.Property(e => e.CouponTypeId).HasColumnName("CouponTypeID");
             entity.Property(e => e.Description).HasMaxLength(255);
@@ -366,9 +366,9 @@ public partial class GameSpacedatabaseContext : DbContext
 
         modelBuilder.Entity<Evoucher>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("EVoucher");
+            entity.HasKey(e => e.EvoucherId).HasName("PK_EVoucher");
+
+            entity.ToTable("EVoucher");
 
             entity.HasIndex(e => new { e.UserId, e.IsUsed, e.EvoucherId }, "EVoucher_index_27");
 
@@ -388,9 +388,9 @@ public partial class GameSpacedatabaseContext : DbContext
 
         modelBuilder.Entity<EvoucherRedeemLog>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("EVoucherRedeemLog");
+            entity.HasKey(e => e.RedeemId).HasName("PK_EVoucherRedeemLog");
+
+            entity.ToTable("EVoucherRedeemLog");
 
             entity.HasIndex(e => new { e.EvoucherId, e.ScannedAt }, "EVoucherRedeemLog_index_28");
 
@@ -410,9 +410,9 @@ public partial class GameSpacedatabaseContext : DbContext
 
         modelBuilder.Entity<EvoucherToken>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("EVoucherToken");
+            entity.HasKey(e => e.TokenId).HasName("PK_EVoucherToken");
+
+            entity.ToTable("EVoucherToken");
 
             entity.Property(e => e.EvoucherId).HasColumnName("EVoucherID");
             entity.Property(e => e.Token)
@@ -423,9 +423,9 @@ public partial class GameSpacedatabaseContext : DbContext
 
         modelBuilder.Entity<EvoucherType>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("EVoucherType");
+            entity.HasKey(e => e.EvoucherTypeId).HasName("PK_EVoucherType");
+
+            entity.ToTable("EVoucherType");
 
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.EvoucherTypeId).HasColumnName("EVoucherTypeID");
@@ -893,9 +893,9 @@ public partial class GameSpacedatabaseContext : DbContext
 
         modelBuilder.Entity<MiniGame>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("MiniGame");
+            entity.HasKey(e => e.PlayId).HasName("PK_MiniGame");
+
+            entity.ToTable("MiniGame");
 
             entity.HasIndex(e => new { e.UserId, e.StartTime }, "MiniGame_index_24");
 
@@ -1282,9 +1282,9 @@ public partial class GameSpacedatabaseContext : DbContext
 
         modelBuilder.Entity<Pet>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("Pet");
+            entity.HasKey(e => e.PetId).HasName("PK_Pet");
+
+            entity.ToTable("Pet");
 
             entity.HasIndex(e => e.UserId, "Pet_index_23");
 
@@ -2145,7 +2145,7 @@ public partial class GameSpacedatabaseContext : DbContext
 
         modelBuilder.Entity<UserSignInStat>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasKey(e => e.LogId).HasName("PK_UserSignInStats");
 
             entity.HasIndex(e => new { e.UserId, e.SignTime }, "UserSignInStats_index_22");
 
@@ -2179,9 +2179,9 @@ public partial class GameSpacedatabaseContext : DbContext
 
         modelBuilder.Entity<UserWallet>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("User_Wallet");
+            entity.HasKey(e => e.UserId).HasName("PK_User_Wallet");
+
+            entity.ToTable("User_Wallet");
 
             entity.Property(e => e.UserId).HasColumnName("User_Id");
             entity.Property(e => e.UserPoint).HasColumnName("User_Point");
@@ -2201,9 +2201,9 @@ public partial class GameSpacedatabaseContext : DbContext
 
         modelBuilder.Entity<WalletHistory>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("WalletHistory");
+            entity.HasKey(e => e.LogId).HasName("PK_WalletHistory");
+
+            entity.ToTable("WalletHistory");
 
             entity.HasIndex(e => new { e.UserId, e.ChangeTime }, "WalletHistory_index_30");
 

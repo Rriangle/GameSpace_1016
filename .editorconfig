@@ -1,0 +1,59 @@
+# GameSpace EditorConfig - UTF-8 with BOM for all source files
+# 強制所有原始碼檔案使用 UTF-8 with BOM 編碼
+
+root = true
+
+# Default settings for all files
+[*]
+charset = utf-8-bom
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C# source files
+[*.{cs,csx}]
+charset = utf-8-bom
+indent_style = space
+indent_size = 4
+
+# Razor views and pages
+[*.{cshtml,razor}]
+charset = utf-8-bom
+indent_style = space
+indent_size = 4
+
+# JavaScript and TypeScript
+[*.{js,ts,jsx,tsx}]
+charset = utf-8-bom
+indent_style = space
+indent_size = 4
+
+# CSS and SCSS
+[*.{css,scss,sass}]
+charset = utf-8-bom
+indent_style = space
+indent_size = 4
+
+# JSON files
+[*.{json,jsonc}]
+charset = utf-8-bom
+indent_style = space
+indent_size = 2
+
+# SQL files
+[*.sql]
+charset = utf-8-bom
+indent_style = space
+indent_size = 4
+
+# Markdown and documentation
+[*.{md,txt}]
+charset = utf-8-bom
+indent_style = space
+indent_size = 2
+
+# XML and config files
+[*.{xml,config,props,targets,csproj,sln}]
+charset = utf-8-bom
+indent_style = space
+indent_size = 2
