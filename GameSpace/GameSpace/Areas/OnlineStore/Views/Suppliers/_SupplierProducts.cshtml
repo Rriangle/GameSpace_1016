@@ -1,0 +1,37 @@
+﻿@model IEnumerable<GameSpace.Areas.OnlineStore.ViewModels.SupplierProductVM>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info mb-0">所選供應商目前沒有商品。</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:120px;">供應商編號</th>
+                    <th style="width:220px;">供應商名稱</th>
+                    <th style="width:120px;">商品類別</th>
+                    <th style="width:140px;">商品編號</th>
+                    <th>商品名稱</th>
+                    <th style="width:120px;">商品ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var x in Model)
+                {
+                    <tr>
+                        <td>@x.SupplierId</td>
+                        <td>@x.SupplierName</td>
+                        <td>@x.Category</td>
+                        <td>@(string.IsNullOrWhiteSpace(x.ProductCode) ? "-" : x.ProductCode)</td>
+                        <td>@x.ProductName</td>
+                        <td>@x.ProductId</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+}

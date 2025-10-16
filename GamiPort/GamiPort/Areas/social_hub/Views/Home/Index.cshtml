@@ -1,0 +1,81 @@
+﻿@{
+    ViewData["Title"] = "social_hub / Home / Index";
+}
+
+<div class="container py-4">
+    <h3 class="mb-3">通知測試（Index 按鈕）</h3>
+
+    @* 顯示伺服器回傳訊息（TempData） *@
+    @if (TempData["toast"] is string toast && !string.IsNullOrWhiteSpace(toast))
+    {
+        <div class="alert alert-info" role="alert">@toast</div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <p class="text-muted mb-2">
+                按下按鈕會用「系統寄件」方式，送一則通知給一位使用者（Controller 動作裡有示範要送給誰）。
+            </p>
+
+            @* ✅ 表單 POST 版（最穩，建議先用這個） *@
+            <form asp-area="social_hub"
+                  asp-controller="Home"
+                  asp-action="SendDemo"
+                  method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-send"></i> 送出測試通知
+                </button>
+            </form>
+
+            @* （可選）AJAX 版：不換頁寄送 — 要先在 _Layout 引入 bootstrap icons 或自行移除圖示 *@
+            <button id="btnAjax" type="button" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-lightning-charge"></i> AJAX 送出（JSON）
+            </button>
+
+            <div id="ajaxMsg" class="mt-3"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // --- AJAX 版：用 fetch POST 到同一個動作 ---
+        (function () {
+            const btn = document.getElementById('btnAjax');
+            const msg = document.getElementById('ajaxMsg');
+            if (!btn) return;
+
+            btn.addEventListener('click', async function () {
+                // 目標 URL：/social_hub/Home/SendDemo
+                const url = '@Url.Action("SendDemo", "Home", new { area = "social_hub" })';
+
+                // Anti-forgery token 從頁面現有的 form 取（或自行加一個隱藏欄位）
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                const token = tokenInput ? tokenInput.value : '';
+
+                // 這裡示範「空 body」→ 因為我們的 SendDemo() 沒有要接表單參數
+                // 若改用收參數的動作（下方註解那個），就把 body 改成 URLSearchParams 傳過去
+                try {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': token
+                        }
+                    });
+
+                    if (!res.ok) {
+                        msg.innerHTML = `<div class="alert alert-danger">HTTP ${res.status}：送出失敗</div>`;
+                        return;
+                    }
+
+                    // 因為動作回傳的是 Redirect（302→200），AJAX這裡只會拿到最終的 HTML
+                    // 如果希望直接拿 JSON，請改用上面註解的「收參數」動作，並 return Json(...)。
+                    msg.innerHTML = `<div class="alert alert-success">已送出（請看上方 TempData 訊息或資料庫）</div>`;
+                } catch (e) {
+                    msg.innerHTML = `<div class="alert alert-danger">錯誤：${e}</div>`;
+                }
+            });
+        })();
+    </script>
+}

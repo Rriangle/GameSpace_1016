@@ -1,0 +1,65 @@
+﻿@model GameSpace.Areas.OnlineStore.ViewModels.SupplierVM
+
+<div class="modal-header">
+    <h5 class="modal-title">
+        @(Model.SupplierId == 0 ? "新增供應商" : "編輯供應商")
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+
+<div class="modal-body">
+    <form id="supplierForm" method="post"
+          action="@(Model.SupplierId == 0
+                              ? Url.Action("Create", "Suppliers", new { area = "OnlineStore" })
+                              : Url.Action("Edit", "Suppliers", new { area = "OnlineStore" }))">
+
+        @Html.AntiForgeryToken()
+
+        @if (Model.SupplierId != 0)
+        {
+            <input type="hidden" name="SupplierId" value="@Model.SupplierId" />
+        }
+
+        <div class="mb-3">
+            <label class="form-label">供應商名稱</label>
+            <input name="SupplierName" class="form-control" value="@Model.SupplierName" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">是否合作中</label>
+            <select name="IsActive" class="form-select">
+                <option value="true" selected="@(Model.IsActive)">合作中</option>
+                <option value="false" selected="@(Model.IsActive == false)">不合作</option>
+            </select>
+        </div>
+
+        <div class="text-end">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+            <button type="submit" class="btn btn-primary">儲存</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // AJAX 提交
+    $('#supplierForm').on('submit', function (e) {
+        e.preventDefault();
+        const $form = $(this);
+        $.ajax({
+            url: $form.attr('action'),
+            type: 'POST',
+            data: $form.serialize(),
+            success: function (res) {
+                if (res && res.ok) {
+                    var modalEl = document.getElementById('crudModal');
+                    var modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                    window.reloadAfterCrud(); // 刷新列表
+                } else {
+                    alert(res?.message || '發生未知錯誤');
+                }
+            },
+            error: function () { alert('伺服器錯誤'); }
+        });
+    });
+</script>

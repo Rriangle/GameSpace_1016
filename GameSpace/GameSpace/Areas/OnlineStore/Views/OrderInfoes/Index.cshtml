@@ -1,0 +1,249 @@
+﻿@{
+    ViewData["Title"] = "訂單總覽";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+<style>
+    /* 明細按鈕 */
+    .btn-detail {
+        border: none;
+        background: transparent;
+        color: #0d6efd;
+        text-decoration: none;
+        padding: .25rem .5rem;
+        border-radius: .25rem;
+    }
+
+        .btn-detail:hover {
+            background: #0d6efd;
+            color: #fff;
+            text-decoration: none;
+        }
+
+    /* length 與總筆數同列對齊 */
+    .dataTables_wrapper .dataTables_length label {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: .25rem;
+    }
+
+    .dt-total {
+        margin-left: .25rem;
+        white-space: nowrap;
+    }
+</style>
+
+<h1 class="mb-3">訂單總覽</h1>
+
+<button class="btn btn-sm btn-outline-primary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+    進階搜尋
+</button>
+
+<div class="collapse" id="filterCollapse">
+    <div class="card card-body">
+<!-- 篩選表單 -->
+        <!-- 篩選表單 -->
+        <div class="collapse" id="filterCollapse">
+            <div class="card card-body" style="font-size: 0.85rem; transform: scale(0.9); transform-origin: top left;">
+                <form id="filterForm" class="row g-2">
+
+                    <!-- 第一排：時間篩選 -->
+                    <div class="col-12 fw-bold text-muted mb-1">時間篩選</div>
+                    <div class="col-sm-4 col-md-3">
+                        <select class="form-select form-select-sm" id="dateField" name="dateField">
+                            @* <option value="all">全部</option> *@
+                            <option value="order">下單時間</option>
+                            <option value="payment">付款時間</option>
+                            <option value="shipped">出貨時間</option>
+                            <option value="completed">完成時間</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-4 col-md-3">
+                        <input type="date" class="form-control form-control-sm" id="dateStart" name="dateStart" placeholder="起" />
+                    </div>
+                    <div class="col-sm-4 col-md-3">
+                        <input type="date" class="form-control form-control-sm" id="dateEnd" name="dateEnd" placeholder="迄" />
+                    </div>
+
+                    @* <!-- 第二排：狀態篩選 -->
+                    <div class="col-12 fw-bold text-muted mt-3 mb-1">狀態篩選</div>
+                    <div class="col-sm-4 col-md-3">
+                        <input type="text" class="form-control form-control-sm" id="orderStatus" name="orderStatus" placeholder="訂單狀態" />
+                    </div>
+                    <div class="col-sm-4 col-md-3">
+                        <select class="form-select form-select-sm" id="orderStatus" name="orderStatus">
+                            <option value="">訂單狀態(不篩選)</option>
+                            <option value="已成立">未出貨</option>
+                            <option value="處理中">已出貨</option>
+                            <option value="已完成">已完成</option>
+                        </select>
+                    </div>
+
+                    <!-- 付款狀態 -->
+                    <div class="col-sm-4 col-md-3">
+                        <select class="form-select form-select-sm" id="paymentStatus" name="paymentStatus">
+                            <option value="">付款狀態(不篩選)</option>
+                            <option value="INIT">INIT (待付款)</option>
+                            <option value="PAID">PAID (已付款)</option>
+                            <option value="FAILED">FAILED (付款失敗)</option>
+                            <option value="REFUND">REFUND (已退款)</option>
+                        </select>
+                    </div> *@
+
+                    <!-- 第三排：金額篩選 -->
+                    <div class="col-12 fw-bold text-muted mt-3 mb-1">金額篩選</div>
+                    <div class="col-sm-6 col-md-3">
+                        <input type="number" class="form-control form-control-sm" id="minTotal" name="minTotal" placeholder="金額下限" />
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <input type="number" class="form-control form-control-sm" id="maxTotal" name="maxTotal" placeholder="金額上限" />
+                    </div>
+
+                    <!-- 操作按鈕 -->
+                    <div class="col-12 mt-3 d-flex gap-2">
+                        <button type="button" id="btnSearch" class="btn btn-sm btn-primary">
+                            <i class="bi bi-search"></i> 篩選
+                        </button>
+                        <button type="button" id="btnReset" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-arrow-counterclockwise"></i> 重設
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+            @* <div class="col-md-3">
+                <label class="form-label">ID 類型</label>
+                <select class="form-select" id="idType" name="idType">
+                    <option value="">(不指定)</option>
+                    <option value="order_id">訂單ID</option>
+                    <option value="order_code">訂單編號</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">ID 值</label>
+                <input type="text" class="form-control" id="idValue" name="idValue" placeholder="精準比對" />
+            </div> *@
+            
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table id="orders" class="table table-striped table-hover w-100">
+            <thead>
+                <tr>
+                    <th>訂單代碼</th>
+                    <th>會員ID</th>
+                    <th>下單時間</th>
+                    <th>訂單狀態</th>
+                    <th>付款狀態</th>
+                    <th>金額</th>
+                    <th>付款時間</th>
+                    <th>出貨時間</th>
+                    <th>完成時間</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(function () {
+        const listUrl = '@Url.Action("List", "OrderInfoes", new { area = "OnlineStore" })';
+
+        const table = $('#orders').DataTable({
+            processing: true,
+            serverSide: true,
+            searching: true,
+            orderMulti: false,
+            order: [[2, 'desc']],
+            ajax: {
+                url: listUrl,
+                type: 'GET',
+                data: function (d) {
+                    d.dateField      = $('#dateField').val();
+                    d.dateStart      = $('#dateStart').val();
+                    d.dateEnd        = $('#dateEnd').val();
+                    d.orderStatus    = $('#orderStatus').val();
+                    d.paymentStatus  = $('#paymentStatus').val();
+                    d.shipmentStatus = $('#shipmentStatus').val();
+                    d.idType         = $('#idType').val();
+                    d.idValue        = $('#idValue').val();
+                    d.minTotal       = $('#minTotal').val();
+                    d.maxTotal       = $('#maxTotal').val();
+                }
+            },
+            columns: [
+                { data: 'orderCode' },
+                { data: 'userId' },
+                { data: 'orderDate', render: v => v ? new Date(v).toLocaleString('zh-TW') : '' },
+                { data: 'orderStatus' },
+                { data: 'paymentStatus' },
+                {
+                    data: 'orderTotal',
+                    className: 'text-end',
+                    render: v => v != null ? Number(v).toLocaleString('zh-TW', { style: 'currency', currency: 'TWD' }) : ''
+                },
+                { data: 'paymentAt',  render: v => v ? new Date(v).toLocaleString('zh-TW') : '' },
+                { data: 'shippedAt',  render: v => v ? new Date(v).toLocaleString('zh-TW') : '' },
+                { data: 'completedAt',render: v => v ? new Date(v).toLocaleString('zh-TW') : '' },
+                {
+                    data: null, orderable: false, searchable: false,
+                    render: row => `
+                        <a href="@Url.Action("Detail", "OrderDetail", new { area = "OnlineStore" })/${row.orderId}"
+                           class="btn btn-sm btn-detail">明細</a>`
+                }
+            ],
+            dom: '<"top d-flex justify-content-between align-items-center"l f>rt<"bottom"p><"clear">',
+            info: false,
+            language: {
+                lengthMenu: '顯示 _MENU_ 筆',
+                search: '搜尋：',
+                zeroRecords: '沒有符合的資料',
+                processing: '處理中...',
+                loadingRecords: '載入中...',
+                paginate: { first:'第一頁', previous:'上一頁', next:'下一頁', last:'最後一頁' }
+            },
+            initComplete: function () {
+                const $wrap = $('#orders_wrapper');
+                const $lenLabel = $wrap.find('.dataTables_length label');
+                if ($lenLabel.find('#orders-total').length === 0) {
+                    $lenLabel.append('<span id="orders-total" class="dt-total text-muted"></span>');
+                }
+                updateTotal();
+            }
+        });
+
+        function updateTotal() {
+            const json = (table.ajax && table.ajax.json) ? table.ajax.json() : null;
+            const totalFromServer =
+                (json && typeof json.recordsFiltered === 'number') ? json.recordsFiltered :
+                (json && typeof json.recordsTotal === 'number')    ? json.recordsTotal    : null;
+            const total = totalFromServer || 0;
+            $('#orders-total').text(', 共 ' + total.toLocaleString('zh-TW') + ' 筆');
+        }
+
+        $('#orders').on('xhr.dt', updateTotal);
+        $('#orders').on('draw.dt', updateTotal);
+
+        // 篩選按鈕
+        $('#btnSearch').on('click', function () {
+            table.ajax.reload();
+        });
+
+        // 重設按鈕
+        $('#btnReset').on('click', function () {
+            $('#filterForm')[0].reset();
+            table.ajax.reload();
+        });
+    });
+</script>

@@ -1,0 +1,52 @@
+﻿@* @model List<GameSpace.Areas.OnlineStore.ViewModels.ProductDetails.ProductDetailListItemVM>
+@using GameSpace.Areas.OnlineStore.ViewModels.ProductDetails
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+@foreach (var item in Model)
+{
+    <div class="col">
+        <div class="card h-100 @(item.IsActive ? "" : "border-danger")">
+            @if (!string.IsNullOrEmpty(item.ImageUrl))
+            {
+                <img src="@item.ImageUrl" class="card-img-top" alt="@item.ImageAlt" style="object-fit:cover;height:180px;">
+            }
+            <div class="card-body">
+                <h5 class="card-title mb-1">
+                    @item.Name
+                    <span class="badge bg-@(item.Kind==ProductKind.Game?"info":"secondary")">@item.Kind</span>
+                    @if (!item.IsActive) { <span class="badge bg-danger">停用</span> }
+                </h5>
+                <div class="small text-muted mb-2">
+                    @item.ProductCode · @item.SupplierName
+                </div>
+                <p class="card-text" style="min-height:3em;">
+                    @(string.IsNullOrWhiteSpace(item.Description) ? "—" :
+                        (item.Description.Length > 80 ? item.Description.Substring(0,80) + "..." : item.Description))
+                </p>
+                @if(item.Kind == ProductKind.Game && !string.IsNullOrWhiteSpace(item.PlatformName)){
+                    <div class="small">平台：@item.PlatformName · 類型：@item.GameType</div>
+                }
+                @if(item.Kind == ProductKind.Other && (!string.IsNullOrWhiteSpace(item.Color) || !string.IsNullOrWhiteSpace(item.Size))){
+                    <div class="small">規格：@item.Color @item.Size</div>
+                }
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <a class="btn btn-sm btn-outline-primary"
+                   href="@Url.Action("Details","ProductDetails", new { area="Mall", kind=item.Kind, id=item.ProductId })">
+                    詳細
+                </a>
+
+                <form method="post" asp-action="ToggleActive" asp-controller="ProductDetails" asp-area="Mall" class="m-0 p-0">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="kind" value="@item.Kind" />
+                    <input type="hidden" name="id" value="@item.ProductId" />
+                    <button type="submit" class="btn btn-sm @(item.IsActive ? "btn-outline-danger" : "btn-outline-success")"
+                            onclick="return confirm('@(item.IsActive ? "確認要停用？(可復原)" : "確認要復原啟用？")');">
+                        @(item.IsActive ? "停用(假刪除)" : "復原啟用")
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+</div> *@

@@ -1,0 +1,154 @@
+﻿@model IEnumerable<GameSpace.Areas.OnlineStore.ViewModels.SupplierVM>
+@{
+    ViewData["Title"] = "供應商管理";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+}
+
+<h1 class="mb-3">供應商管理</h1>
+
+<div class="d-flex gap-2 mb-2">
+    @* <button id="btnCreate" class="btn btn-primary btn-sm">新增供應商</button> *@
+    <button id="btnViewProducts" class="btn btn-outline-secondary btn-sm" disabled asp-action="ProductsBySuppliers">查看所屬商品</button>
+</div>
+@{
+    bool allowOps = (bool?)ViewBag.AllowOperations ?? false;
+}
+
+<table id="tblSuppliers" class="display table-bordered table-striped table-hover table" style="width:100%">
+    <thead>
+        <tr>
+            <th>選擇</th>
+            <th>供應商編號</th>
+            <th>供應商名稱</th>
+            <th>合作狀態</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Model)
+        {
+            <tr data-id="@s.SupplierId">
+                <td><input type="checkbox" class="supplier-select" /></td>
+                <td>@s.SupplierId</td>
+                <td>@s.SupplierName</td>
+                <td>@(s.IsActive ? "合作中" : "不合作")</td>
+                <td>
+                    @if (allowOps)
+                    {
+                        <button class="btn btn-sm btn-outline-secondary btn-edit" action="@Url.Action("Edit")">編輯</button>
+                        <form class="d-inline delete-form" method="post" action="@Url.Action("Delete") ">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@s.SupplierId" />
+                            <button type="submit" class="btn btn-sm btn-danger">刪除</button>
+                        </form>
+                        <form class="d-inline toggle-form" method="post" action="@Url.Action("ToggleActive")">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@s.SupplierId" />
+                            <button type="submit" class="btn btn-sm @(s.IsActive ? "btn-warning" : "btn-success")">
+                                @(s.IsActive ? "取消合作" : "恢復合作")
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <!-- 操作隱藏中，可顯示文字或留空白 -->
+                        <span class="text-muted">尚未開放操作</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- 全域 Anti-forgery（給 AJAX 用） -->
+<form id="global-anti-forgery">
+    @Html.AntiForgeryToken()
+</form>
+
+<!-- 商品清單顯示區 -->
+<div id="supplierProductsWrap" class="mt-4" style="display:none;">
+    <h2 class="h5 mb-3">所屬商品</h2>
+    <div id="supplierProductsPanel" class="card card-body"></div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        // 如果要用 getParam，就要補這個 function
+        function getParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        $(document).ready(function () {
+            const initLen = parseInt(getParam('len') ?? localStorage.getItem('supplier.len') ?? '10', 10);
+
+            $('#tblSuppliers').DataTable({
+                // searching: false,
+                // ordering: true,
+                // order: [[1, 'asc']], 改成以供應商編號排序比較合理
+                // pageLength: isNaN(initLen) ? 10 : initLen,
+                // lengthMenu: [[10, 20, 30, 50, 100, -1], [10, 20, 30, 50, 100, '全部']],
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/zh-HANT.json"
+                },
+                // dom: "t<'row mt-3'<'col-12'p>>",
+                // columnDefs: [
+                //     { targets: [0, 4], orderable: false } 選擇/操作不排序
+                // ]
+            });
+        });
+    </script>
+    <script>
+        // 取 CSRF Token（抓頁面第一個 AntiForgery 欄位即可）
+        function getCsrfToken() {
+            return $('input[name="__RequestVerificationToken"]').first().val();
+        }
+
+        // 勾選行為：控制「查看所屬商品」按鈕啟用
+        $(document).on('change', '#tblSuppliers .supplier-select', function () {
+            const anyChecked = $('#tblSuppliers .supplier-select:checked').length > 0;
+            $('#btnViewProducts').prop('disabled', !anyChecked);
+        });
+
+        // 查看所屬商品（不換頁，下拉顯示）
+        $('#btnViewProducts').on('click', function () {
+            const ids = [];
+            $('#tblSuppliers .supplier-select:checked').each(function () {
+                ids.push($(this).closest('tr').data('id'));
+            });
+            if (ids.length === 0) return;
+
+            $.ajax({
+                url: '@Url.Action("ProductsBySuppliers", "Suppliers", new { area = "OnlineStore" })',
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify(ids),
+                headers: { 'RequestVerificationToken': getCsrfToken() }, // ✅ 有 token 才不會 400
+                success: function (html) {
+                    $('#supplierProductsPanel').html(html);
+                    $('#supplierProductsWrap').slideDown(150);
+                },
+                error: function (xhr) {
+                    // 若看到 400，通常就是 CSRF 沒帶到
+                    alert('載入商品清單失敗（狀態 ' + xhr.status + '）');
+                }
+            });
+        });
+
+        // 進頁時，若已選（例如回到頁面），同步一次按鈕狀態
+        $(function(){
+            const anyChecked = $('#tblSuppliers .supplier-select:checked').length > 0;
+            $('#btnViewProducts').prop('disabled', !anyChecked);
+        });
+    </script>
+
+}

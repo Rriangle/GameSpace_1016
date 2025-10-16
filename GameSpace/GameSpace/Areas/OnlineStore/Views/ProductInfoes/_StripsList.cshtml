@@ -1,0 +1,413 @@
+﻿@model IEnumerable<dynamic>
+
+@{
+    string keyword = (string)(ViewBag.Keyword ?? "");
+    string type = (string)(ViewBag.Type ?? "");
+    string status = (string)(ViewBag.Status ?? "all");
+    int? supplierId = (int?)ViewBag.SupplierId;
+    int? platformId = (int?)ViewBag.PlatformId;
+    int? merchTypeId = (int?)ViewBag.MerchTypeId;
+    string gameType = (string)(ViewBag.GameType ?? "");
+
+    int page = (int)(ViewBag.Page ?? 1);
+    int pageSize = (int)(ViewBag.PageSize ?? 12);
+    int total = (int)(ViewBag.Total ?? 0);
+
+    var typeList = (IEnumerable<string>)(ViewBag.TypeList ?? Enumerable.Empty<string>());
+    var suppliers = (IEnumerable<dynamic>)(ViewBag.SupplierList ?? Enumerable.Empty<dynamic>());
+    var platforms = (IEnumerable<dynamic>)(ViewBag.PlatformList ?? Enumerable.Empty<dynamic>());
+    var merchTypes = (IEnumerable<dynamic>)(ViewBag.MerchTypeList ?? Enumerable.Empty<dynamic>());
+}
+
+<div class="strips-root container-fluid">
+    <!-- 這層根節點很重要，用來做局部替換 -->
+    <!-- 給 AJAX 讀反偽造 token 用（隱藏） -->
+    <form id="__afForm" style="display:none;"> @Html.AntiForgeryToken() </form>
+
+    <!-- 篩選列（完全獨立；由 JS 截下改用 fetch 局部刷新） -->
+    <form id="stripsFilterForm" method="get"
+          action="@Url.Action("Strips","ProductInfoes", new { area="OnlineStore" })"
+          class="row g-2 align-items-end mb-3">
+        <div class="col-lg-3 col-md-4">
+            <label class="form-label">名稱/類別 關鍵字</label>
+            <input type="text" name="keyword" value="@keyword" class="form-control" placeholder="關鍵字">
+        </div>
+        <div class="col-lg-2 col-md-3">
+            <label class="form-label">類別</label>
+            <select name="type" class="form-select">
+                <option value="">全部類別</option>
+                @foreach (var t in typeList)
+                {
+                    <option value="@t" selected="@(type == t)">@t</option>
+                }
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-3">
+            <label class="form-label">狀態</label>
+            <select name="status" class="form-select">
+                <option value="all" selected="@(status == "all")">全部</option>
+                <option value="active" selected="@(status == "active")">上架</option>
+                <option value="inactive" selected="@(status == "inactive")">下架</option>
+            </select>
+        </div>
+
+        <!-- 擴充篩選 -->
+        <div class="col-lg-2 col-md-3">
+            <label class="form-label">供應商</label>
+            <select name="supplierId" class="form-select">
+                <option value="">全部</option>
+                @foreach (var s in suppliers)
+                {
+                    <option value="@s.SupplierId" selected="@(supplierId == (int?)s.SupplierId)">@s.SupplierName</option>
+                }
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-3">
+            <label class="form-label">平台（game）</label>
+            <select name="platformId" class="form-select">
+                <option value="">全部</option>
+                @foreach (var p in platforms)
+                {
+                    <option value="@p.PlatformId" selected="@(platformId == (int?)p.PlatformId)">@p.PlatformName</option>
+                }
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-3">
+            <label class="form-label">遊戲類型（game）</label>
+            <input type="text" name="gameType" value="@gameType" class="form-control" placeholder="RPG、ACT...">
+        </div>
+        <div class="col-lg-2 col-md-3">
+            <label class="form-label">商品種類（notgame）</label>
+            <select name="merchTypeId" class="form-select">
+                <option value="">全部</option>
+                @foreach (var m in merchTypes)
+                {
+                    <option value="@m.MerchTypeId" selected="@(merchTypeId == (int?)m.MerchTypeId)">@m.MerchTypeName</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-lg-2 col-md-3">
+            <label class="form-label">顯示筆數</label>
+            <select name="pageSize" class="form-select" id="pageSizeSelect">
+                <option value="10" selected="@(pageSize == 10)">10</option>
+                <option value="12" selected="@(pageSize == 12)">12</option>
+                <option value="25" selected="@(pageSize == 25)">25</option>
+                <option value="50" selected="@(pageSize == 50)">50</option>
+                <option value="100" selected="@(pageSize == 100)">100</option>
+            </select>
+        </div>
+
+        <div class="col-12 mt-1">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> 套用條件</button>
+            <a class="btn btn-outline-secondary" data-action="resetStrips" href="javascript:;"><i class="bi bi-eraser"></i> 清除條件</a>
+        </div>
+    </form>
+
+    <!-- 表頭 -->
+    <div class="row fw-bold border-bottom py-2 mb-2 text-muted">
+        <div class="col-1">ID</div>
+        <div class="col-2">圖片</div>
+        <div class="col-3">商品名稱</div>
+        <div class="col-4">內容</div>
+        <div class="col-2 text-end">操作</div>
+    </div>
+
+    <!-- 清單內容 -->
+    @foreach (var x in Model)
+    {
+        <div class="row align-items-center border rounded-3 shadow-sm mb-2 py-2 strip-item">
+
+            <!-- ID -->
+            <div class="col-1 text-muted">#@x.ProductId</div>
+
+            <!-- 圖片 + 看大圖 -->
+            <div class="col-2">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="@(x.ImageUrl ?? "/img/noimage.png")"
+                         alt="@Convert.ToString(x.ProductName)"
+                         class="rounded border"
+                         style="width:80px;height:80px;object-fit:cover;">
+                    <button class="btn btn-sm btn-outline-secondary js-view-image"
+                            type="button"
+                            data-img="@((string)(x.ImageUrl ?? "/img/noimage.png"))"
+                            title="看大圖">
+                        <i class="bi bi-arrows-fullscreen"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 商品名稱 + 類型/狀態/代碼 -->
+            <div class="col-3">
+                <div class="fw-bold">@Convert.ToString(x.ProductName)</div>
+                <div class="small text-muted mt-1">
+                    @if (!string.IsNullOrWhiteSpace(Convert.ToString(x.ProductCode)))
+                    {
+                        <span class="badge bg-light text-dark border">@("#" + Convert.ToString(x.ProductCode))</span>
+                    }
+                    <span class="badge bg-secondary ms-1">@Convert.ToString(x.ProductType)</span>
+                    @if ((bool)x.IsActive)
+                    {
+                        <span class="badge bg-success ms-1 js-active-cell">上架</span>
+                    }
+                    else
+                    {
+
+                        <span class="badge bg-secondary ms-1 js-active-cell">下架</span>
+                    }
+                </div>
+            </div>
+
+            <!-- 內容（Game / NotGame） -->
+            <div class="col-4 small text-muted">
+                <span>售價：@((decimal)x.Price)</span>
+
+                @if (!string.IsNullOrWhiteSpace(Convert.ToString(x.SupplierName)))
+                {
+                    <span class="mx-1 text-secondary">|</span>
+                    <span>供應商：@Convert.ToString(x.SupplierName)</span>
+     }
+
+                @if (!string.IsNullOrWhiteSpace(Convert.ToString(x.PlatformName)))
+                {
+                    <span class="mx-1 text-secondary">|</span>
+                    <span>平台：@Convert.ToString(x.PlatformName)</span>
+     }
+
+                @if (!string.IsNullOrWhiteSpace(Convert.ToString(x.GameType)))
+                {
+                    <span class="mx-1 text-secondary">|</span>
+                    <span>遊戲類型：@Convert.ToString(x.GameType)</span>
+     }
+
+                @if (!string.IsNullOrWhiteSpace(Convert.ToString(x.MerchTypeName)))
+                {
+                    <span class="mx-1 text-secondary">|</span>
+                    <span>商品種類：@Convert.ToString(x.MerchTypeName)</span>
+     }
+
+                <br />
+                <span>建立：@(((DateTime)x.ProductCreatedAt).ToString("yyyy/MM/dd HH:mm"))</span>
+                @if (x.LastChangedAt != null)
+                {
+                    <span class="mx-1 text-secondary">|</span>
+                    <span>最後異動：@(((DateTime)x.LastChangedAt).ToString("yyyy/MM/dd HH:mm"))</span>
+     }
+            </div>
+
+            <!-- 操作 -->
+            <div class="col-2 text-end">
+                <a href="javascript:;" class="text-primary me-2 js-open-modal"
+                   title="編輯"
+                   data-modal-url="@Url.Action("Edit", "ProductInfoes", new { area = "OnlineStore", id = x.ProductId })">
+                    <i class="bi bi-pencil-square fs-5"></i>
+                </a>
+
+                <a href="javascript:;" class="text-warning me-2 js-toggle-active"
+                   title="上/下架"
+                   data-id="@x.ProductId"
+                   data-on="@((bool)x.IsActive)">
+                    <i class="bi bi-power fs-5"></i>
+                </a>
+
+                <a href="javascript:;" class="text-secondary me-2 js-open-modal"
+                   title="詳細內容"
+                   data-modal-url='@Url.Action("DetailModal", "ProductInfoes", new { area = "OnlineStore", id = x.ProductId })'>
+                    <i class="bi bi-card-text fs-5"></i>
+                </a>
+
+                <a href="javascript:;" class="text-secondary js-open-modal"
+                   title="全部圖片"
+                   data-modal-url='@Url.Action("ImagesModal", "ProductInfoes", new { area = "OnlineStore", id = x.ProductId })'>
+                    <i class="bi bi-images fs-5"></i>
+                </a>
+            </div>
+        </div>
+    }
+
+    <!-- 分頁 -->
+    @{
+        int pageCount = (int)Math.Ceiling(total / (double)pageSize);
+        string qsBase(string key, object? val)
+        {
+            var dict = new Dictionary<string, string?>
+            {
+                ["keyword"] = keyword,
+                ["type"] = type,
+                ["status"] = status,
+                ["supplierId"] = supplierId?.ToString(),
+                ["platformId"] = platformId?.ToString(),
+                ["merchTypeId"] = merchTypeId?.ToString(),
+                ["gameType"] = gameType,
+                ["pageSize"] = pageSize.ToString()
+            };
+            dict[key] = val?.ToString();
+            var arr = dict.Where(kv => !string.IsNullOrWhiteSpace(kv.Value))
+            .Select(kv => $"{kv.Key}={Uri.EscapeDataString(kv.Value!)}");
+            return "?" + string.Join("&", arr);
+        }
+    }
+    <nav class="mt-3">
+        <ul class="pagination pagination-sm justify-content-center">
+            <li class="page-item @(page <= 1 ? "disabled" : "")">
+                <a class="page-link js-ajax-nav"
+                   href="@Url.Action("Strips", "ProductInfoes", new { area = "OnlineStore" })@qsBase("page", page - 1)">上一頁</a>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">第 @(page) / @pageCount 頁（共 @total 筆）</span>
+            </li>
+            <li class="page-item @(page >= pageCount ? "disabled" : "")">
+                <a class="page-link js-ajax-nav"
+                   href="@Url.Action("Strips", "ProductInfoes", new { area = "OnlineStore" })@qsBase("page", page + 1)">下一頁</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- 通用 Modal（建議這段放在母頁，但放這裡也可正常運作） -->
+<div class="modal fade" id="commonAjaxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content"><div class="modal-body p-0"><div class="text-center p-5 text-muted">載入中...</div></div></div>
+    </div>
+</div>
+
+<!-- 看大圖 Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <img id="imagePreview" alt="預覽" style="max-width:100%;height:auto;">
+        </div>
+    </div>
+</div>
+
+<!-- 成功 / 失敗 Toast -->
+<div class="position-fixed top-0 start-50 translate-middle-x p-3" style="z-index:1080">
+    <div id="toastOk" class="toast text-bg-success border-0" data-bs-delay="2200" role="alert"><div class="toast-body">✅ 已完成！</div></div>
+    <div id="toastErr" class="toast text-bg-danger  border-0 mt-2" data-bs-delay="4200" role="alert"><div class="toast-body">❌ 操作失敗</div></div>
+</div>
+
+<script>
+    (function () {
+      // ---------- 小工具 ----------
+      function root() { return document.currentScript.closest('.strips-root'); }
+      function getAfToken() {
+        const f = root().querySelector('#__afForm');
+        return f ? (f.querySelector('input[name="__RequestVerificationToken"]')?.value || '') : '';
+      }
+      function swapHtml(html) {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        const newRoot = wrapper.querySelector('.strips-root');
+        if (!newRoot) return;
+        root().replaceWith(newRoot);
+        // 換完要重綁事件
+        bindEvents(newRoot);
+      }
+      function ajaxSwap(url) {
+        fetch(url, { credentials: 'same-origin' })
+          .then(r => r.text()).then(swapHtml)
+          .catch(_ => showToast('toastErr', '載入失敗'));
+      }
+      function showToast(id, msg) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const b = el.querySelector('.toast-body'); if (b && msg) b.textContent = msg;
+        bootstrap.Toast.getOrCreateInstance(el).show();
+      }
+
+      // ---------- 綁事件（每次局部刷新後都會重叫） ----------
+      function bindEvents(scope) {
+        scope = scope || root();
+
+        // 篩選表單：改用 AJAX 局部刷新
+        const form = scope.querySelector('#stripsFilterForm');
+        if (form) {
+          form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const params = new URLSearchParams(new FormData(form)).toString();
+            ajaxSwap(form.action + '?' + params);
+          });
+
+          // 每頁筆數選單：變更就送出
+          const ps = form.querySelector('#pageSizeSelect');
+          if (ps) ps.addEventListener('change', () => form.dispatchEvent(new Event('submit')));
+        }
+
+        // 清除條件（停留在 Strips 畫面）
+        const resetBtn = scope.querySelector('[data-action="resetStrips"]');
+        if (resetBtn) {
+          resetBtn.addEventListener('click', function(){
+            ajaxSwap('@Url.Action("Strips", "ProductInfoes", new { area = "OnlineStore" })');
+          });
+        }
+
+        // 分頁：用 AJAX 取代跳頁
+        scope.querySelectorAll('a.js-ajax-nav').forEach(a => {
+          a.addEventListener('click', function (e) {
+            e.preventDefault();
+            ajaxSwap(a.href);
+          });
+        });
+
+        // 開 Modal（載入 partial）
+        scope.querySelectorAll('.js-open-modal').forEach(a => {
+          a.addEventListener('click', function(){
+            const url = a.getAttribute('data-modal-url');
+            const modalEl = document.getElementById('commonAjaxModal');
+            const body = modalEl.querySelector('.modal-body');
+            body.innerHTML = '<div class="text-center p-5 text-muted">載入中...</div>';
+            fetch(url, { credentials: 'same-origin' })
+              .then(r => r.text()).then(html => { body.innerHTML = html; })
+              .catch(_ => { body.innerHTML = '<div class="text-danger p-4">載入失敗</div>'; });
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+          });
+        });
+
+        // 看大圖
+        scope.querySelectorAll('.js-view-image').forEach(btn => {
+          btn.addEventListener('click', function(){
+            const src = btn.getAttribute('data-img') || '/img/noimage.png';
+            document.getElementById('imagePreview').setAttribute('src', src);
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('imagePreviewModal')).show();
+          });
+        });
+
+        // 上/下架切換
+        scope.querySelectorAll('.js-toggle-active').forEach(btn => {
+          btn.addEventListener('click', function(){
+            const id = btn.getAttribute('data-id');
+            const on = btn.getAttribute('data-on') === 'true';
+            fetch('@Url.Action("ToggleActive", "ProductInfoes", new { area = "OnlineStore" })', {
+              method: 'POST',
+              headers: {
+                'Content-Type':'application/json',
+                'RequestVerificationToken': getAfToken() // 對應 [ValidateAntiForgeryToken]
+              },
+              credentials: 'same-origin',
+              body: JSON.stringify({ id: Number(id), enable: !on })
+            })
+            .then(r => r.ok ? r.json() : Promise.reject())
+            .then(json => {
+              if (json?.ok) {
+                // 更新 badge 與 data-on
+                const cell = btn.closest('.strip-item')?.querySelector('.js-active-cell');
+                if (cell) {
+                  cell.textContent = json.active ? '上架' : '下架';
+                  cell.classList.toggle('bg-success', json.active);
+                  cell.classList.toggle('bg-secondary', !json.active);
+                }
+                btn.setAttribute('data-on', String(json.active));
+                showToast('toastOk', '已' + (json.active ? '上架' : '下架'));
+              } else {
+                showToast('toastErr', json?.msg || '操作失敗');
+              }
+            })
+            .catch(_ => showToast('toastErr', '連線失敗'));
+          });
+        });
+      }
+
+      // 首次載入綁一次
+      bindEvents();
+    })();
+</script>

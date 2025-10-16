@@ -1,0 +1,76 @@
+﻿@* @model GameSpace.Areas.OnlineStore.ViewModels.ProductDetails.ProductDetailDetailVM
+@using GameSpace.Areas.OnlineStore.ViewModels.ProductDetails
+
+@{
+    ViewData["Title"] = "商品明細 - " + Model.Name;
+}
+
+<div class="container py-3">
+    <a class="btn btn-outline-secondary mb-3" href="javascript:history.back()">返回</a>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img class="card-img-top" src="@Model.ImageUrl" alt="@Model.ImageAlt" />
+                }
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="badge bg-@(Model.Kind==ProductKind.Game?"info":"secondary")">@Model.Kind</span>
+                        @if (!Model.IsActive) { <span class="badge bg-danger">停用</span> }
+                    </div>
+                    <div>代碼：@Model.ProductCode</div>
+                    <div>供應商：@Model.SupplierName</div>
+                </div>
+                <div class="card-footer">
+                    <form method="post" asp-action="ToggleActive" asp-controller="ProductDetails" asp-area="Mall" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="kind" value="@Model.Kind" />
+                        <input type="hidden" name="id" value="@Model.ProductId" />
+                        <button type="submit" class="btn btn-sm @(Model.IsActive ? "btn-outline-danger" : "btn-outline-success")"
+                                onclick="return confirm('@(Model.IsActive ? "確認要停用？(可復原)" : "確認要復原啟用？")');">
+                            @(Model.IsActive ? "停用(假刪除)" : "復原啟用")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">@Model.Name</h3>
+                    <p>@(string.IsNullOrWhiteSpace(Model.Description) ? "—" : Model.Description)</p>
+
+                    @if (Model.Kind == ProductKind.Game)
+                    {
+                        <dl class="row">
+                            <dt class="col-sm-3">平台</dt><dd class="col-sm-9">@Model.PlatformName</dd>
+                            <dt class="col-sm-3">類型</dt><dd class="col-sm-9">@Model.GameType</dd>
+                            <dt class="col-sm-3">下載</dt><dd class="col-sm-9">
+                                @if(!string.IsNullOrWhiteSpace(Model.DownloadLink))
+                                {
+                                    <a href="@Model.DownloadLink" target="_blank" rel="noopener">下載連結</a>
+                                }
+                                else { @:— }
+                            </dd>
+                        </dl>
+                    }
+                    else
+                    {
+                        <dl class="row">
+                            <dt class="col-sm-3">尺寸</dt><dd class="col-sm-9">@Model.Size</dd>
+                            <dt class="col-sm-3">顏色</dt><dd class="col-sm-9">@Model.Color</dd>
+                            <dt class="col-sm-3">材質</dt><dd class="col-sm-9">@Model.Material</dd>
+                            <dt class="col-sm-3">重量</dt><dd class="col-sm-9">@Model.Weight</dd>
+                            <dt class="col-sm-3">尺寸(長寬高)</dt><dd class="col-sm-9">@Model.Dimensions</dd>
+                            <dt class="col-sm-3">庫存</dt><dd class="col-sm-9">@Model.StockQuantity</dd>
+                        </dl>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+ *@

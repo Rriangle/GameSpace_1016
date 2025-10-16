@@ -1,0 +1,59 @@
+﻿<!--同樣用 data-modal-url 開 Modal-->
+<!--卡片版Partial-->
+@model IEnumerable<dynamic>
+
+<div class="row g-3">
+    @foreach (var x in Model)
+    {
+        <div class="col-12 col-sm-6 col-lg-4">
+            <div class="card h-100 shadow-sm border rounded-3">
+                <div class="ratio ratio-16x9 bg-light">
+                    <img src="@(x.ImageUrl ?? "/img/noimage.png")"
+                         alt="@x.ProductName"
+                         class="object-fit-cover w-100 h-100 rounded-top" />
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <h6 class="card-title mb-0 text-truncate" title="@x.ProductName">@x.ProductName</h6>
+                        <span class="badge @(x.IsActive ? "bg-success" : "bg-secondary")">
+                            @(x.IsActive ? "上架" : "下架")
+                        </span>
+                    </div>
+                    <div class="text-muted small mb-2">
+                        <span class="me-2">@x.ProductType</span>
+                        @if (!string.IsNullOrEmpty((string)x.ProductCode))
+                        {
+                            <span class="me-2">#@x.ProductCode</span>
+                        }
+                        @if (x.LastChangedAt != null)
+                        {
+                            <span>最後異動：@(((DateTime)x.LastChangedAt).ToString("yyyy/MM/dd"))</span>
+                        }
+                    </div>
+                    <div class="fw-semibold fs-5">@((decimal)x.Price).ToString("N0")</div>
+                </div>
+                <div class="card-footer bg-white border-0 d-flex justify-content-end gap-2">
+                    <a class="text-info" href="javascript:;" title="商品明細"
+                       data-modal-url="@Url.Action("DetailPanel", "ProductInfoes", new { area = "OnlineStore", id = x.ProductId })">
+                        <i class="bi bi-aspect-ratio"></i>
+                    </a>
+                    <a class="text-primary" href="javascript:;" title="編輯"
+                       data-modal-url="@Url.Action("Edit", "ProductInfoes", new { area = "OnlineStore", id = x.ProductId })">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <a class="text-danger" href="javascript:;" title="下架"
+                       data-modal-url="@Url.Action("Delete", "ProductInfoes", new { area = "OnlineStore", id = x.ProductId })">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                    <a class="text-secondary" href="javascript:;" title="異動紀錄"
+                       data-modal-url="@Url.Action("AuditLog", "ProductInfoes", new { area = "OnlineStore", id = x.ProductId })">
+                        <i class="bi bi-clock-history"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+

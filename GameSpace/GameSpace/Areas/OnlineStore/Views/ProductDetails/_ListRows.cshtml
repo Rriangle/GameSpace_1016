@@ -1,0 +1,76 @@
+﻿@* @model List<GameSpace.Areas.OnlineStore.ViewModels.ProductDetailToListItemVM>
+@using GameSpace.Areas.OnlineStore.ViewModels.ProductDetails
+
+<table class="table table-striped table-hover align-middle" id="pdTable">
+    <thead>
+        <tr>
+            <th>類別</th>
+            <th>代碼</th>
+            <th>名稱</th>
+            <th>供應商</th>
+            <th>描述</th>
+            <th>其他資訊</th>
+            <th>狀態</th>
+            <th style="width:160px;">動作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr class="@(item.IsActive ? "" : "table-danger")">
+                <td><span class="badge bg-@(item.Kind == ProductKind.Game ? "info" : "secondary")">@item.Kind</span></td>
+                <td>@item.ProductCode</td>
+                <td>@item.Name</td>
+                <td>@item.SupplierName</td>
+                <td class="text-truncate" style="max-width:300px;">
+                    @(string.IsNullOrWhiteSpace(item.Description) ? "—" :
+                                    (item.Description.Length > 100 ? item.Description.Substring(0, 100) + "..." : item.Description))
+            </td>
+            <td class="small">
+                @if (item.Kind == ProductKind.Game)
+                    {
+                        <div>平台：@item.PlatformName</div>
+                        <div>類型：@item.GameType</div>
+                    }
+                    else
+                    {
+                        <div>尺寸：@item.Size / 顏色：@item.Color</div>
+                        <div>材質：@item.Material / 重量：@item.Weight</div>
+                    }
+                </td>
+                <td>@(item.IsActive ? "啟用" : "停用")</td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a class="btn btn-outline-primary"
+                           href="@Url.Action("Details", "ProductDetails", new { area = "Mall", kind = item.Kind, id = item.ProductId })">
+                            詳細
+                        </a>
+                        <form method="post" asp-action="ToggleActive" asp-controller="ProductDetails" asp-area="Mall" class="ms-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="kind" value="@item.Kind" />
+                            <input type="hidden" name="id" value="@item.ProductId" />
+                            <button type="submit" class="btn @(item.IsActive ? "btn-outline-danger" : "btn-outline-success")"
+                                    onclick="return confirm('@(item.IsActive ? "確認要停用？(可復原)" : "確認要復原啟用？")');">
+                                @(item.IsActive ? "停用(假刪除)" : "復原啟用")
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        // 若專案已引入 DataTables：
+        if (window.jQuery && $.fn.dataTable) {
+            $('#pdTable').DataTable({
+                pageLength: 10,
+                lengthChange: true,
+                ordering: true
+            });
+        }
+    </script>
+}
+ *@

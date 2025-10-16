@@ -1,0 +1,79 @@
+﻿@model GameSpace.Models.ProductInfo
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>ProductInfo</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ProductId" />
+            <div class="form-group">
+                <label asp-for="ProductName" class="control-label"></label>
+                <input asp-for="ProductName" class="form-control" />
+                <span asp-validation-for="ProductName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ProductType" class="control-label"></label>
+                <input asp-for="ProductType" class="form-control" />
+                <span asp-validation-for="ProductType" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Price" class="control-label"></label>
+                <input asp-for="Price" class="form-control" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CurrencyCode" class="control-label"></label>
+                <input asp-for="CurrencyCode" class="form-control" />
+                <span asp-validation-for="CurrencyCode" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ShipmentQuantity" class="control-label"></label>
+                <input asp-for="ShipmentQuantity" class="form-control" />
+                <span asp-validation-for="ShipmentQuantity" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ProductCreatedBy" class="control-label"></label>
+                <select asp-for="ProductCreatedBy" class="form-control" asp-items="ViewBag.ProductCreatedBy"></select>
+                <span asp-validation-for="ProductCreatedBy" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ProductCreatedAt" class="control-label"></label>
+                <input asp-for="ProductCreatedAt" class="form-control" />
+                <span asp-validation-for="ProductCreatedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ProductUpdatedBy" class="control-label"></label>
+                <select asp-for="ProductUpdatedBy" class="form-control" asp-items="ViewBag.ProductUpdatedBy"></select>
+                <span asp-validation-for="ProductUpdatedBy" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ProductUpdatedAt" class="control-label"></label>
+                <input asp-for="ProductUpdatedAt" class="form-control" />
+                <span asp-validation-for="ProductUpdatedAt" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
+                </label>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

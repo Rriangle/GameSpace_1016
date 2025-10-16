@@ -1,0 +1,291 @@
+﻿@model GameSpace.Areas.OnlineStore.ViewModels.OrderDetailViewModels
+
+@{
+    // 狀態 → badge 顏色
+    string payBadge = (Model.PaymentStatus ?? "").ToUpper() switch
+    {
+        "SUCCESS" => "success",
+        "PENDING" => "warning",
+        "FAIL" or "FAILED" => "danger",
+        _ => "secondary"
+    };
+    string shipBadge = (Model.Status ?? "").ToUpper() switch
+    {
+        "DELIVERED" => "success",
+        "SHIPPED" or "PICKED" => "primary", 
+        "READY" or "PROCESSING" => "info",
+        "CANCELLED" => "danger",
+        _ => "secondary"
+    };
+
+
+}
+    
+
+
+<div class="container-fluid">
+    <h2 class="mb-2 d-flex align-items-center gap-2">
+        訂單明細
+        <span class="badge bg-dark-subtle text-dark-emphasis" style="font-weight:600;">
+            #@Model.OrderCode
+        </span>
+    </h2>
+    <div class="text-muted small">
+        訂單ID：@Model.OrderId
+    </div>
+    <hr />
+    
+    <div class="row g-4">
+        <!-- 左欄：訂單資訊 / 出貨資訊 / 收件地址（lg+ 固定在左） -->
+        <div class="col-12 col-lg-5 col-xl-5 d-flex flex-column gap-4">
+
+            <!-- 訂單資訊 -->
+            <div class="card shadow-sm">
+                <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                    <span>訂單資訊</span>
+                    @* <button type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#voidOrderModal">
+                        <i class="bi bi-x-circle"></i> 作廢
+                    </button> *@
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-5 col-sm-4 text-muted">訂單代碼 :</dt>
+                        <dd class="col-7 col-sm-8">@Model.OrderCode</dd>
+
+                        <dt class="col-5 col-sm-4 text-muted">會員ID :</dt>
+                        <dd class="col-7 col-sm-8">@Model.UserId</dd>
+
+                        <dt class="col-5 col-sm-4 text-muted">總金額 :</dt>
+                        <dd class="col-7 col-sm-8">@Model.OrderTotal.ToString("N2")</dd>
+
+                        <dt class="col-5 col-sm-4 text-muted">訂單狀態 :</dt>
+                        <dd class="col-7 col-sm-8">@Model.OrderStatus</dd>
+
+                        <dt class="col-5 col-sm-4 text-muted">下單時間 :</dt>
+                        <dd class="col-7 col-sm-8">@Model.OrderDate.ToString("yyyy/MM/dd HH:mm")</dd>
+                    </dl>
+                </div>
+            </div>
+            @* Razor 產生 Anti-Forgery Token
+            <form id="voidOrderForm" method="post">
+                @Html.AntiForgeryToken()
+            </form>
+
+            <div class="modal fade" id="voidOrderModal" tabindex="-1" aria-labelledby="voidOrderModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="voidOrderModalLabel">作廢訂單</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-danger fw-semibold mb-2">確定要作廢這筆訂單嗎？</p>
+                            <div class="mb-3">
+                                <label for="voidReason" class="form-label">請填寫作廢原因</label>
+                                <textarea id="voidReason" class="form-control" rows="3" maxlength="200" placeholder="最多200字"></textarea>
+                                <div class="form-text">此原因會寫入 OrderStatusHistory.note</div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-danger" id="btnConfirmVoid">確認作廢</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                  const btn = document.getElementById('btnConfirmVoid');
+                  btn?.addEventListener('click', async function () {
+                    const reason = document.getElementById('voidReason').value.trim();
+                    if (!reason) { alert('請輸入作廢原因'); return; }
+
+                    // 從隱藏表單拿 Anti-Forgery Token
+                    const tokenInput = document.querySelector('#voidOrderForm input[name="__RequestVerificationToken"]');
+                    const token = tokenInput ? tokenInput.value : '';
+
+                    try {
+                            const res = await fetch('@Url.Action("VoidOrder", "OrderDetail", new { area = "OnlineStore" })', 
+                            {
+                                method: 'POST',
+                                credentials: 'same-origin',          // ★ 確保帶上 Anti-CSRF Cookie
+                                headers: {
+                                'Content-Type': 'application/json',
+                                'RequestVerificationToken': token  // ★ 和上面 HeaderName 對上
+                            },
+                             body: JSON.stringify({ orderId: @Model.OrderId, reason })
+                        });
+
+                      if (res.ok) {
+                        // 你也可以改成跳回訂單總覽或顯示 Toast
+                        location.reload();
+                      } else {
+                        const t = await res.text();
+                        alert('作廢失敗：' + t);
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      alert('作廢發生錯誤，請稍後再試');
+                    }
+                  });
+                })();
+            </script> *@
+
+            <!-- 出貨資訊 -->
+            <div class="card shadow-sm">
+                <div class="card-header fw-semibold">出貨資訊</div>
+                <div class="card-body">
+                    <dl class="row mb-2">
+                        <dt class="col-5 col-sm-4 text-muted">出貨狀態 :</dt>
+                        <dd class="col-7 col-sm-8">
+                            <span class="badge bg-@shipBadge">@Model.Status</span>
+                        </dd>
+                    </dl>
+                    <dl class="row mb-0">
+                        <dt class="col-5 col-sm-4 text-muted">出貨單號 :</dt>
+                        <dd class="col-7 col-sm-8">@(Model.ShipmentCode?.ToString() ?? "-")</dd>
+
+                        <dt class="col-5 col-sm-4 text-muted">出貨時間 :</dt>
+                        <dd class="col-7 col-sm-8">@(Model.ShippedAt?.ToString("yyyy/MM/dd HH:mm") ?? "-")</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- 收件地址 -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>收件地址</span>
+                <div>
+                    @if (Model.OrderStatus?.ToUpperInvariant() == "SHIPPED"
+                                        || Model.OrderStatus?.ToUpperInvariant() == "已完成"
+                                        || Model.OrderStatus?.ToUpperInvariant() == "已出貨"
+                                        || Model.OrderStatus?.ToUpperInvariant() == "已取消")
+                    {
+                        <a class="btn btn-outline-secondary btn-sm disabled" aria-disabled="true" title="已出貨後不可修改">
+                            編輯收件地址
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-outline-primary btn-sm"
+                               asp-area="OnlineStore" asp-controller="OrderDetail" asp-action="EditAddress"
+                           asp-route-orderId="@Model.OrderId">
+                            編輯收件地址
+                        </a>
+                    }
+                </div>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-5 col-sm-4 text-muted">收件人 :</dt>
+                        <dd class="col-7 col-sm-8">@Model.Recipient</dd>
+
+                        <dt class="col-5 col-sm-4 text-muted">電話 :</dt>
+                        <dd class="col-7 col-sm-8">@Model.Phone</dd>
+
+                        <dt class="col-5 col-sm-4 text-muted">國家 :</dt>
+                        <dd class="col-7 col-sm-8">@Model.Country</dd>
+
+                        <dt class="col-5 col-sm-4 text-muted">地址 :</dt>
+                        <!-- 郵遞區號 + 城市 + 地址 -->
+                        <dd class="col-7 col-sm-8">
+                            @($"{Model.Zipcode} {Model.City} {Model.Address1}")
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+            @* 成功/資訊訊息（TempData） *@
+            @if (TempData["Success"] is string ok)
+            {
+                <div class="alert alert-success">@ok</div>
+            }
+            @if (TempData["Info"] is string info)
+            {
+                <div class="alert alert-info">@info</div>
+            }
+        </div>
+
+        <!-- 右欄：上 付款資訊 / 下 訂單明細（lg+ 固定在右） -->
+        <div class="col-12 col-lg-7 col-xl-7 d-flex flex-column gap-4">
+
+            <!-- 付款資訊（右欄上方小卡） -->
+            <div class="card shadow-sm">
+                <div class="card-header fw-semibold">付款資訊</div>
+                <div class="card-body">
+                    <dl class="row mb-2">
+                        <dt class="col-5 col-sm-4 text-muted">付款狀態 :</dt>
+                        <dd class="col-7 col-sm-8">
+                            <span class="badge bg-@payBadge">@Model.PaymentStatus</span>
+                        </dd>
+                    </dl>
+                    <dl class="row mb-0">
+                        <dt class="col-5 col-sm-4 text-muted">付款代碼 :</dt>
+                        <dd class="col-7 col-sm-8">@(Model.PaymentCode?.ToString() ?? "-")</dd>
+
+                        <dt class="col-5 col-sm-4 text-muted">付款時間 :</dt>
+                        <dd class="col-7 col-sm-8">@(Model.PaymentAt?.ToString("yyyy/MM/dd HH:mm") ?? "-")</dd>
+                    </dl>
+                </div>
+            </div>
+            <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+            <!-- 訂單明細（右欄下方大卡，填滿右欄剩餘高度） -->
+            <table id="orderItemsTable" class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>商品代碼</th>
+                        <th>商品名稱</th>
+                        <th class="text-end">數量</th>
+                        <th class="text-end">單價</th>
+                        <th class="text-end">小計</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var it in Model.Items)
+                    {
+                        <tr>
+                            <td class="text-break">@((it.ProductCode ?? "-"))</td>
+                            <td>
+                                @it.ProductName
+                                <div class="text-muted small">#@it.ProductId</div>
+                            </td>
+                            <td class="text-end">@it.Quantity</td>
+                            <td class="text-end">@it.UnitPrice.ToString("N2")</td>
+                            <td class="text-end">@it.Subtotal.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="4" class="text-end">明細合計</th>
+                        <th class="text-end">
+                            @( (Model.Items?.Sum(i => i.Subtotal) ?? 0m).ToString("N2") )
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+            <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+            <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+            <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+            <script>
+                $(document).ready(function () {
+                    $('#orderItemsTable').DataTable({
+                        // 可依需求調整
+                        pageLength: 5,
+                        lengthMenu: [5, 10, 20],
+                        searching: false,   // 如果只想要分頁排序，不要搜尋，就關掉
+                        ordering: true,
+                        language: {
+                            url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/zh-HANT.json"
+                        }
+                    });
+                });
+            </script>
+            </div>
+        </div>
+    </div>
+
+</div>

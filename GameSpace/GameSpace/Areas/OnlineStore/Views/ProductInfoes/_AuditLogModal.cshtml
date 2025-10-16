@@ -1,0 +1,54 @@
+﻿@model IEnumerable<GameSpace.Areas.OnlineStore.ViewModels.ProductInfoAuditLogRowVM>
+@{
+    var productId = (int)ViewBag.ProductId;
+    var productName = (string)(ViewBag.ProductName ?? $"#{productId}");
+}
+<div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">異動紀錄 - @productName</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:120px;">時間</th>
+                            <th style="width:90px;">動作</th>
+                            <th style="width:140px;">欄位</th>
+                            <th>Before → After</th>
+                            <th style="width:90px;">Manager</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr><td colspan="5" class="text-center text-muted">尚無紀錄</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var x in Model)
+                            {
+                                <tr>
+                                    <td>@x.ChangedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>@x.ActionType</td>
+                                    <td>@x.FieldName</td>
+                                    <td class="small">
+                                        <div class="text-muted text-truncate">@x.OldValue</div>
+                                        <div>→</div>
+                                        <div class="text-truncate">@x.NewValue</div>
+                                    </td>
+                                    <td>@x.ManagerId</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">關閉</button>
+        </div>
+    </div>
+</div>

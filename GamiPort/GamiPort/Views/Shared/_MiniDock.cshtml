@@ -1,0 +1,418 @@
+﻿@* Views/Shared/_MiniDock.cshtml *@
+<div id="miniDock" aria-live="polite">
+    <!-- 主按鈕 -->
+    <button type="button" class="md-main btn btn-primary rounded-circle shadow" aria-label="開啟工具列">
+        <i class="bi bi-grid-fill"></i>
+    </button>
+
+    <!-- 工具列（往上長） -->
+    <div class="md-tools" hidden></div>
+
+    <!-- 釘選按鈕列（永遠在工具列的左邊一欄） -->
+    <div class="md-pins" aria-label="釘選工具區"></div>
+
+    <!-- 面板樣板 -->
+    <template id="md-panel-tpl">
+        <section class="md-panel card shadow" role="dialog" aria-modal="false">
+            <header class="card-header py-2 px-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-window-stack text-secondary"></i>
+                    <strong class="md-title small mb-0">對話</strong>
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <button class="btn btn-light btn-sm md-min" type="button" title="最小化"><i class="bi bi-dash"></i></button>
+                    <button class="btn btn-light btn-sm md-close" type="button" title="關閉"><i class="bi bi-x-lg"></i></button>
+                </div>
+            </header>
+            <div class="card-body p-2 d-flex flex-column">
+                <div class="flex-grow-1 border rounded bg-light-subtle p-3 text-muted small">
+                    這裡是示意內容（之後可換成聊天/工具 UI）。
+                </div>
+                <div class="input-group mt-2">
+                    <input class="form-control" placeholder="輸入訊息…" />
+                    <button class="btn btn-primary">送出</button>
+                </div>
+            </div>
+        </section>
+    </template>
+</div>
+
+<style>
+    /* ---- 固定尺寸（與 JS 同步） ---- */
+    :root {
+        --md-edge: 24px; /* 右下角邊界 */
+        --md-gap: 12px; /* 元件間距 */
+        --md-main: 56px; /* 主按鈕直徑 */
+        --md-col: 48px; /* 工具/釘選按鈕直徑（同欄寬） */
+    }
+
+    /* ---- 基本定位 ---- */
+    #miniDock .md-main {
+        position: fixed;
+        right: var(--md-edge);
+        bottom: var(--md-edge);
+        width: var(--md-main);
+        height: var(--md-main);
+        display: grid;
+        place-items: center;
+        z-index: 1060;
+    }
+
+    #miniDock .md-tools {
+        position: fixed;
+        right: var(--md-edge);
+        bottom: calc(var(--md-edge) + var(--md-main) + var(--md-gap));
+        z-index: 1060;
+        display: flex;
+        flex-direction: column;
+        gap: var(--md-gap);
+    }
+
+        #miniDock .md-tools[hidden] {
+            display: none !important;
+        }
+
+    /* 釘選列：由 JS 動態設定 right，永遠與工具列保持一欄距離 */
+    #miniDock .md-pins {
+        position: fixed;
+        bottom: calc(var(--md-edge) + var(--md-main) + var(--md-gap));
+        z-index: 1060;
+        display: flex;
+        flex-direction: column;
+        gap: var(--md-gap);
+    }
+
+    #miniDock .md-tool, #miniDock .md-pin {
+        width: var(--md-col);
+        height: var(--md-col);
+        display: grid;
+        place-items: center;
+    }
+
+    /* ---- 面板（右→左、下→上貼齊） ---- */
+    #miniDock .md-panel {
+        position: fixed;
+        width: 360px;
+        height: 340px;
+        z-index: 1059;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+        #miniDock .md-panel[hidden] {
+            display: none !important;
+        }
+
+    /* =========================
+               現代化樣式（Material 3 風格）
+               ========================= */
+    #miniDock {
+        --md-fab-size: var(--md-main);
+        --md-pin-size: var(--md-col);
+        --md-primary: #2563eb; /* blue-600 */
+        --md-primary-2: #1e40af; /* blue-800 */
+        --md-surface: #ffffff;
+        --md-on-surface: #111827;
+        --md-shadow: 0 8px 20px rgba(2,6,23,.18), 0 2px 8px rgba(2,6,23,.12);
+        --md-ring: 0 0 0 4px rgba(37,99,235,.25);
+    }
+
+        /* 主按鈕（FAB） */
+        #miniDock .md-main {
+            border: 0;
+            border-radius: 9999px;
+            color: #fff;
+            background: linear-gradient(135deg,var(--md-primary),var(--md-primary-2));
+            box-shadow: var(--md-shadow);
+            transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+        }
+
+            #miniDock .md-main:hover {
+                transform: translateY(-2px) scale(1.02);
+                filter: brightness(1.05);
+            }
+
+            #miniDock .md-main:active {
+                transform: translateY(0) scale(.98);
+                filter: brightness(.98);
+            }
+
+            #miniDock .md-main:focus-visible {
+                outline: none;
+                box-shadow: var(--md-ring), var(--md-shadow);
+            }
+
+        /* 工具/釘選按鈕的共同造型 */
+        #miniDock .md-tool > i, #miniDock .md-pin > button > i {
+            pointer-events: none;
+        }
+
+        #miniDock .md-tool,
+        #miniDock .md-pin > .btn-outline-primary {
+            border: 0;
+            border-radius: 9999px;
+            background: var(--md-surface);
+            color: var(--md-on-surface);
+            box-shadow: var(--md-shadow);
+            transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+        }
+
+            #miniDock .md-tool:hover,
+            #miniDock .md-pin > .btn-outline-primary:hover {
+                transform: translateY(-1px);
+                filter: brightness(1.02);
+            }
+
+            #miniDock .md-tool:active,
+            #miniDock .md-pin > .btn-outline-primary:active {
+                transform: translateY(0) scale(.98);
+            }
+
+            #miniDock .md-tool:focus-visible,
+            #miniDock .md-pin > .btn-outline-primary:focus-visible {
+                outline: none;
+                box-shadow: var(--md-ring), var(--md-shadow);
+            }
+
+        /* 釘選按鈕右上角的關閉 X（小圓點外凸） */
+        #miniDock .md-pin {
+            position: relative;
+        }
+
+            #miniDock .md-pin .md-pin-close {
+                position: absolute;
+                right: 0;
+                top: 0;
+                transform: translate(45%,-45%);
+                width: 20px;
+                height: 20px;
+                padding: 0;
+                border: 0;
+                border-radius: 9999px;
+                background: #fff;
+                color: #111827;
+                box-shadow: 0 3px 10px rgba(0,0,0,.18);
+                display: grid;
+                place-items: center;
+                cursor: pointer;
+            }
+
+    @@media (max-width: 576px) {
+        #miniDock .md-pin .md-pin-close {
+            transform: translate(35%,-35%);
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    /* 小膠囊提示（可選，使用 data-label） */
+    #miniDock .md-pin[data-label]::after,
+    #miniDock .md-tool[data-label]::after {
+        content: attr(data-label);
+        position: absolute;
+        right: calc(100% + 10px);
+        top: 50%;
+        transform: translateY(-50%) translateX(-6px);
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(17,24,39,.9);
+        color: #fff;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: .2s ease;
+    }
+
+    #miniDock .md-pin:hover::after, #miniDock .md-tool:hover::after {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
+
+    /* 可選：Glass 風格（將 #miniDock 加 data-theme="glass"） */
+    #miniDock[data-theme="glass"] {
+        --md-surface: rgba(255,255,255,.14);
+        --md-on-surface: #f8fafc;
+        --md-shadow: 0 10px 30px rgba(2,6,23,.24);
+    }
+
+        #miniDock[data-theme="glass"] .md-tool,
+        #miniDock[data-theme="glass"] .md-pin > .btn-outline-primary {
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,.25);
+        }
+
+        #miniDock[data-theme="glass"] .md-pin .md-pin-close {
+            background: rgba(255,255,255,.9);
+            border: 1px solid rgba(255,255,255,.5);
+        }
+</style>
+
+<script>
+    (function () {
+      const dock    = document.getElementById('miniDock');
+      if (!dock) return;
+
+      /* --- 節點 --- */
+      const mainBtn = dock.querySelector('.md-main');
+      const toolBox = dock.querySelector('.md-tools');
+      const pinsBox = dock.querySelector('.md-pins');
+      const tpl     = dock.querySelector('#md-panel-tpl');
+
+      /* --- 設定 --- */
+      const TOOLS  = ['A','B','C','D','E','F'];
+      const TITLES = {A:'對話 A',B:'對話 B',C:'對話 C',D:'對話 D',E:'對話 E',F:'對話 F'};
+
+      /* --- 狀態 --- */
+      const panels = new Map();     // id -> {el}
+      const pins   = new Map();     // id -> pinEl
+      const order  = [];            // 右→左、下→上 排列
+
+      /* --- 常數（與 CSS 同步） --- */
+      const EDGE = 24, GAP = 12, MAIN = 56, COL = 48;
+
+      /* ========== 建工具列 ========== */
+      function buildTools(){
+        toolBox.replaceChildren();
+        TOOLS.forEach(id=>{
+          const b = document.createElement('button');
+          b.type='button';
+          b.className='md-tool btn rounded-circle shadow';
+          b.title = TITLES[id] || ('對話 ' + id);
+          b.setAttribute('data-label', b.title);   // 滑上顯示膠囊提示
+          b.innerHTML = `<i class="bi bi-chat-dots"></i>`;
+          b.addEventListener('click', ()=>{ openPanel(id); layout(); });
+          toolBox.appendChild(b);
+        });
+      }
+      buildTools();
+
+      /* ========== 釘選處理 ========== */
+      function createPin(id){
+        if (pins.has(id)) return pins.get(id);
+        const wrap = document.createElement('div');
+        wrap.className = 'md-pin';
+        wrap.setAttribute('data-label', TITLES[id] || ('對話 ' + id));
+        wrap.innerHTML = `
+          <button type="button" class="btn btn-outline-primary rounded-circle shadow" style="width:${COL}px;height:${COL}px">
+            <i class="bi bi-chat-dots"></i>
+          </button>
+          <button type="button" class="btn btn-light border md-pin-close" title="移除"><i class="bi bi-x-lg"></i></button>
+        `;
+        const goBtn = wrap.querySelector('.btn-outline-primary');
+        const xBtn  = wrap.querySelector('.md-pin-close');
+
+        goBtn.addEventListener('click', ()=>{ openPanel(id); hidePin(id); layout(); });
+        xBtn.addEventListener('click',  ()=>{ closePanel(id); });
+
+        pins.set(id, wrap);
+        pinsBox.appendChild(wrap);
+        return wrap;
+      }
+      function showPin(id){ const n = pins.get(id); if(n) n.hidden=false; updateRails(); }
+      function hidePin(id){ const n = pins.get(id); if(n) n.hidden=true;  updateRails(); }
+      function removePin(id){
+        const n = pins.get(id);
+        if(n){ n.remove(); pins.delete(id); updateRails(); }
+      }
+      function hasVisiblePin(){
+        return Array.from(pinsBox.children).some(el=>!el.hidden);
+      }
+
+      /* ========== 面板 開/縮/關 ========== */
+      function openPanel(id){
+        let rec = panels.get(id);
+        if(!rec){
+          const el = tpl.content.firstElementChild.cloneNode(true);
+          el.dataset.id = id;
+          el.querySelector('.md-title').textContent = TITLES[id] || ('對話 ' + id);
+          el.querySelector('.md-min').addEventListener('click', ()=> minimizePanel(id));
+          el.querySelector('.md-close').addEventListener('click', ()=> closePanel(id));
+          dock.appendChild(el);
+          rec = {el};
+          panels.set(id, rec);
+        }
+        rec.el.hidden = false;
+        hidePin(id);                 // 面板與 pin 互斥
+
+        // 送到最右下（排序尾端）
+        const idx = order.indexOf(id);
+        if (idx >= 0) order.splice(idx,1);
+        order.push(id);
+
+        layout();
+      }
+
+      function minimizePanel(id){
+        const rec = panels.get(id);
+        if(!rec) return;
+        rec.el.hidden = true;
+        createPin(id); showPin(id);  // 釘選常駐，直到手動關閉
+        layout();
+      }
+
+      function closePanel(id){
+        const rec = panels.get(id);
+        if(rec){ rec.el.remove(); panels.delete(id); }
+        removePin(id);
+        const idx = order.indexOf(id);
+        if(idx>=0) order.splice(idx,1);
+        layout();
+      }
+
+      /* ========== 工具/釘選欄水平位置 & 面板讓位（防重疊） ========== */
+      function updateRails(){
+        const toolsVisible = !toolBox.hidden;
+        const pinRight = EDGE + (toolsVisible ? (COL + GAP) : 0);
+        pinsBox.style.right = pinRight + 'px';
+      }
+
+      const PANEL_W = 360, PANEL_H = 340;
+      function layout(){
+        // 清理不存在的 id
+        for(let i=order.length-1;i>=0;i--){ if(!panels.has(order[i])) order.splice(i,1); }
+
+        updateRails();
+
+        const toolsVisible = !toolBox.hidden;
+        const pinsVisible  = hasVisiblePin();
+
+        // 需要讓出的右側寬度：主鈕 + 工具列(可見) + 釘選列(有可視)
+        const reservedRight =
+            EDGE + MAIN + GAP
+          + (toolsVisible ? (COL + GAP) : 0)
+          + (pinsVisible  ? (COL + GAP) : 0);
+
+        const vw = document.documentElement.clientWidth;
+        const usable = Math.max(0, vw - (reservedRight + EDGE));    // 左邊留 24px 安全邊
+        const maxCol = Math.max(1, Math.floor(usable / (PANEL_W + GAP)));
+
+        const visibleIds = order.filter(id => {
+          const rec = panels.get(id);
+          return rec && !rec.el.hidden;
+        });
+
+        visibleIds.forEach((id, i)=>{
+          const rec = panels.get(id);
+          const col = i % maxCol;                     // 右→左
+          const row = Math.floor(i / maxCol);         // 下→上
+          rec.el.style.right  = (reservedRight + col*(PANEL_W + GAP)) + 'px';
+          rec.el.style.bottom = (EDGE + row*(PANEL_H + GAP)) + 'px';
+        });
+      }
+
+      /* ========== 事件繫結 ========== */
+      mainBtn.addEventListener('click', ()=>{
+        toolBox.hidden = !toolBox.hidden;
+        updateRails();
+        layout();
+      });
+      window.addEventListener('resize', layout);
+      window.addEventListener('scroll', layout, {passive:true});
+
+      // 初始：只顯示主按鈕
+      toolBox.hidden = true;
+      updateRails();
+      layout();
+    })();
+</script>

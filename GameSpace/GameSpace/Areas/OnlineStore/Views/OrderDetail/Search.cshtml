@@ -1,0 +1,66 @@
+﻿@model IEnumerable<GameSpace.Models.OrderInfo>  //<!-- 命名空間依你的實體實際位置調整 -->
+@{
+    ViewData["Title"] = "訂單搜尋";
+}
+
+<h2 class="mb-3">訂單搜尋</h2>
+
+<form method="get" class="row g-2 mb-3" asp-action="Search">
+    <div class="col-auto">
+        <input name="q" value="@ViewBag.Q" class="form-control" placeholder="輸入訂單id或編號" />
+    </div>
+    <div class="col-auto">
+        <select name="scope" class="form-select">
+            <option value="all" selected>全部</option>
+            <option value="order_code">訂單代碼</option>
+            <option value="order_id">訂單ID</option>
+            @* 之後會加：payment_code / shipment_code *@
+        </select>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary">搜尋</button>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    if (!string.IsNullOrWhiteSpace((string)ViewBag.Q ?? ""))
+    {
+        <div class="alert alert-warning">找不到符合的訂單</div>
+    }
+}
+else
+{
+    <table class="table table-sm align-middle">
+        <thead>
+            <tr>
+                <th>訂單代碼</th>
+                <th>UserId</th>
+                <th>OrderDate</th>
+                <th>OrderStatus</th>
+                <th>PaymentStatus</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td>@o.OrderCode</td>
+                <td>@o.UserId</td>
+                <td>@o.OrderDate</td>
+                <td>@o.OrderStatus</td>
+                <td>@o.PaymentStatus</td>
+                <td>@o.OrderTotal</td>
+                <td>
+                    <a class="btn btn-outline-primary btn-sm"
+                       asp-area="OnlineStore" asp-controller="OrderDetail" asp-action="Detail" asp-route-id="@o.OrderId">
+                        明細
+                    </a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

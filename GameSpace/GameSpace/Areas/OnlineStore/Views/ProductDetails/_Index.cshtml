@@ -1,0 +1,81 @@
+﻿@* @model GameSpace.Areas.OnlineStore.ViewModels.ProductDetailIndexVM
+@using GameSpace.Areas.OnlineStore.ViewModels.ProductDetails
+
+@{
+    ViewData["Title"] = "商品明細（合併）";
+    var isList = Model.ViewMode == "list";
+}
+
+<div class="container-fluid py-3">
+    <h2 class="mb-3">@ViewData["Title"]</h2>
+
+    <form method="get" class="row g-2 align-items-end mb-3" id="filterForm">
+        <input type="hidden" name="view" id="viewInput" value="@Model.ViewMode" />
+        <div class="col-auto">
+            <label class="form-label">關鍵字</label>
+            <input name="search" value="@Model.Search" class="form-control" placeholder="名稱 / 代碼 / 供應商 / 類型..." />
+        </div>
+        <div class="col-auto form-check mt-4">
+            <input type="checkbox" class="form-check-input" id="includeInactive" name="includeInactive" @(Model.IncludeInactive ? "checked" : "") />
+            <label class="form-check-label" for="includeInactive">顯示停用</label>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">套用條件</button>
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">清除</a>
+        </div>
+        <div class="col-auto ms-auto">
+            <div class="btn-group" role="group" aria-label="View Mode">
+                <a class="btn @(isList ? "btn-outline-secondary" : "btn-secondary")" href="#" id="btnCard">卡片</a>
+                <a class="btn @(isList ? "btn-secondary" : "btn-outline-secondary")" href="#" id="btnList">列表</a>
+            </div>
+        </div>
+    </form>
+
+    @if (TempData["Msg"] != null)
+    {
+        <div class="alert alert-success">@TempData["Msg"]</div>
+    }
+
+    <div id="listHost">
+        @if (isList)
+        {
+            @await Html.PartialAsync("_ListRows", Model.Items)
+        }
+        else
+        {
+            @await Html.PartialAsync("_CardGrid", Model.Items)
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <!-- 若要用 DataTables，記得先在 _Layout 引入其 CSS/JS；這裡只放初始化範例 -->
+    <script>
+        // 保留視圖模式（localStorage）
+        const key = "productDetailsViewMode";
+        document.getElementById("btnCard").addEventListener("click", function (e) {
+            e.preventDefault();
+            document.getElementById("viewInput").value = "card";
+            localStorage.setItem(key, "card");
+            document.getElementById("filterForm").submit();
+        });
+        document.getElementById("btnList").addEventListener("click", function (e) {
+            e.preventDefault();
+            document.getElementById("viewInput").value = "list";
+            localStorage.setItem(key, "list");
+            document.getElementById("filterForm").submit();
+        });
+
+        // 初次載入從 localStorage 套用（若使用者沒帶 view 參數）
+        (function(){
+            const url = new URL(window.location);
+            if(!url.searchParams.get("view")){
+                const v = localStorage.getItem(key);
+                if (v === "list" || v === "card") {
+                    document.getElementById("viewInput").value = v;
+                }
+            }
+        })();
+    </script>
+}
+ *@

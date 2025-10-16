@@ -1,0 +1,146 @@
+﻿@model GameSpace.Areas.OnlineStore.ViewModels.ProductDetailModalVM
+
+<div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+        <div class="modal-header bg-light">
+            <h5 class="modal-title">商品詳細資訊 - @Model.ProductName (#@Model.ProductId)</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+
+            @* 基本資料 (Info) *@
+            <div class="border rounded p-3 mb-3">
+                <h6 class="mb-3">基本資料 (Info)</h6>
+                <dl class="row mb-0">
+                    <dt class="col-sm-2">商品名稱</dt>
+                    <dd class="col-sm-4">@Model.ProductName</dd>
+
+                    <dt class="col-sm-2">商品代碼</dt>
+                    <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.ProductCode) ? Model.ProductCode : "-")</dd>
+
+                    <dt class="col-sm-2">類別</dt>
+                    <dd class="col-sm-4">@Model.ProductType</dd>
+
+                    <dt class="col-sm-2">價格</dt>
+                    <dd class="col-sm-4">@Model.Price.ToString("N0") @Model.CurrencyCode</dd>
+
+                    <dt class="col-sm-2">存量</dt>
+                    <dd class="col-sm-4">@Model.ShipmentQuantity</dd>
+
+                    <dt class="col-sm-2">狀態</dt>
+                    <dd class="col-sm-4">
+                        @Html.Raw(Model.IsActive ? "<span class='badge bg-success'>上架</span>" : "<span class='badge bg-secondary'>下架</span>")
+                    </dd>
+
+                    <dt class="col-sm-2">建立時間</dt>
+                    <dd class="col-sm-4">@Model.ProductCreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+
+                    <dt class="col-sm-2">最後更新</dt>
+                    <dd class="col-sm-4">@((Model.ProductUpdatedAt?.ToString("yyyy/MM/dd HH:mm")) ?? "-")</dd>
+                </dl>
+            </div>
+
+            @if (string.Equals(Model.ProductType, "game", StringComparison.OrdinalIgnoreCase))
+            {
+                @* 遊戲商品 (GameDetail) *@
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="mb-3">遊戲商品資料 (GameDetail)</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-2">供應商</dt>
+                        <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.SupplierName) ? Model.SupplierName : "-")</dd>
+
+                        <dt class="col-sm-2">平台ID</dt>
+                        <dd class="col-sm-4">@((Model.PlatformId?.ToString()) ?? "-")</dd>
+
+                        <dt class="col-sm-2">平台名稱</dt>
+                        <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.PlatformName) ? Model.PlatformName : "-")</dd>
+
+                        <dt class="col-sm-2">遊戲種類</dt>
+                        <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.GameType) ? Model.GameType : "-")</dd>
+
+                        <dt class="col-sm-2">下載連結</dt>
+                        <dd class="col-sm-10">
+                            @if (!string.IsNullOrWhiteSpace(Model.DownloadLink))
+                            {
+                                <a href="@Model.DownloadLink" target="_blank">@Model.DownloadLink</a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-2">描述</dt>
+                        <dd class="col-sm-10">@(!string.IsNullOrWhiteSpace(Model.GameDescription) ? Model.GameDescription : "-")</dd>
+                    </dl>
+                </div>
+            }
+            else
+            {
+                @* 非遊戲商品 (OtherDetail) *@
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="mb-3">非遊戲商品資料 (OtherDetail)</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-2">供應商</dt>
+                        <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.SupplierName) ? Model.SupplierName : "-")</dd>
+
+                        <dt class="col-sm-2">分類</dt>
+                        <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.MerchTypeName) ? Model.MerchTypeName : "-")</dd>
+
+                        <dt class="col-sm-2">數位代碼</dt>
+                        <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.DigitalCode) ? Model.DigitalCode : "-")</dd>
+
+                        <dt class="col-sm-2">尺寸</dt>
+                        <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.Size) ? Model.Size : "-")</dd>
+
+                        <dt class="col-sm-2">顏色</dt>
+                        <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.Color) ? Model.Color : "-")</dd>
+
+                        <dt class="col-sm-2">重量</dt>
+                        <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.Weight) ? Model.Weight : "-")</dd>
+
+                        <dt class="col-sm-2">尺寸(mm/cm)</dt>
+                        <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.Dimensions) ? Model.Dimensions : "-")</dd>
+
+                        <dt class="col-sm-2">材質</dt>
+                        <dd class="col-sm-4">@(!string.IsNullOrWhiteSpace(Model.Material) ? Model.Material : "-")</dd>
+
+                        <dt class="col-sm-2">存量</dt>
+                        <dd class="col-sm-4">@((Model.StockQuantity?.ToString()) ?? "-")</dd>
+                        <hr/>
+                        <dt class="col-sm-2">描述</dt>
+                        <dd class="col-sm-10">@(!string.IsNullOrWhiteSpace(Model.OtherDescription) ? Model.OtherDescription : "-")</dd>
+                    </dl>
+                </div>
+            }
+
+            @* 商品圖片 *@
+            <div class="border rounded p-3 mb-3">
+                <h6 class="mb-3">商品圖片</h6>
+                @if (Model.Images != null && Model.Images.Count > 0)
+                {
+                    <a href="javascript:;" class="btn btn-outline-primary"
+                       data-modal-url="@Url.Action("ImagesModal", "ProductInfoes", new { area = "OnlineStore", id = Model.ProductId })">
+                        <i class="bi bi-images"></i> 檢視圖片
+                    </a>
+                }
+                else
+                {
+                    <span class="text-muted">尚無圖片</span>
+                }
+            </div>
+
+            @* 建立／更新資訊（置底細灰字） *@
+            <div class="text-muted small">
+                建立：@Model.ProductCreatedAt.ToString("yyyy/MM/dd HH:mm")（@Model.ProductCreatedBy）
+                ．更新：@((Model.ProductUpdatedAt?.ToString("yyyy/MM/dd HH:mm")) ?? "-")（@Model.ProductUpdatedBy）
+            </div>
+
+        </div> <!-- /.modal-body -->
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+        </div>
+    </div>
+</div>

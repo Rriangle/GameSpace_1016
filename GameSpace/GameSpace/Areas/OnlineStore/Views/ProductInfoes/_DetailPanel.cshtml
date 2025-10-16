@@ -1,0 +1,59 @@
+﻿@model GameSpace.Areas.OnlineStore.ViewModels.ProductDetailModalVM
+@* 路徑：Areas/OnlineStore/Views/ProductInfoes/_DetailPanel.cshtml *@
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header d-flex align-items-center">
+        <div>
+            <div class="fw-bold">
+                商品明細（Info + Detail）- @Model.ProductName
+                @if (!string.IsNullOrWhiteSpace(Model.ProductCode))
+                {
+                    <span class="badge bg-light text-dark border ms-2">@Model.ProductCode</span>
+                }
+            </div>
+            <div class="small text-muted">
+                商品ID：#@Model.ProductId　|　類別：@Model.ProductType
+            </div>
+        </div>
+        <div class="ms-auto">
+            @if (Model.IsActive)
+            {
+                <span class="badge bg-success">上架</span>
+            }
+            else
+            {
+
+                <span class="badge bg-secondary">下架</span>
+            }
+        </div>
+    </div>
+
+    <div class="card-body">
+        @await Html.PartialAsync("_DetailBody", Model)
+    </div>
+
+    <div class="card-footer d-flex align-items-center">
+        <small class="text-muted me-auto">
+            建立：@Model.ProductCreatedAt.ToString("yyyy/MM/dd HH:mm")（@Model.ProductCreatedBy）
+            @if (Model.ProductUpdatedAt.HasValue)
+            {
+                @:　|　更新：@Model.ProductUpdatedAt.Value.ToString("yyyy/MM/dd HH:mm")（@Model.ProductUpdatedBy）
+            }
+        </small>
+
+        <div class="d-inline-flex gap-2">
+            <a href="javascript:;" class="btn btn-outline-primary"
+               data-modal-url="@Url.Action("Edit", "ProductInfoes", new { area = "OnlineStore", id = Model.ProductId })">
+                <i class="bi bi-pencil-square me-1"></i> 編輯
+            </a>
+            <a href="javascript:;" class="btn btn-outline-danger"
+               data-modal-url="@Url.Action("Delete", "ProductInfoes", new { area = "OnlineStore", id = Model.ProductId })">
+                <i class="bi bi-trash me-1"></i> 下架
+            </a>
+            <a href="javascript:;" class="btn btn-outline-secondary"
+               data-modal-url="@Url.Action("AuditLog", "ProductInfoes", new { area = "OnlineStore", id = Model.ProductId })">
+                <i class="bi bi-clock-history me-1"></i> 異動紀錄
+            </a>
+        </div>
+    </div>
+</div>

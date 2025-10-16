@@ -1,0 +1,123 @@
+﻿@model GameSpace.Areas.OnlineStore.ViewModels.ProductDetailModalVM
+@* 共用內容：Info + Detail（自動依據 IsGame 分段顯示） 
+   路徑:Areas/OnlineStore/Views/ProductInfoes/_DetailBody.cshtml*@
+
+
+<style>
+  .kv .k{font-size:.85rem;color:#6c757d}
+  .kv .v{font-weight:600}
+  .img-thumb{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:.5rem;border:1px solid #e9ecef}
+</style>
+
+
+<div class="container-fluid">
+    <!-- 頂端條 -->
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <div class="small text-muted">
+            商品ID：#@Model.ProductId　|　@Model.ProductType
+        </div>
+        <div>
+            @if (Model.IsActive)
+            {
+                <span class="badge bg-success">上架</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">下架</span>
+            }
+        </div>
+    </div>
+
+<!-- 共用（Info） -->
+<div class="row g-3 kv">
+  <div class="col-md-3 col-6">
+    <div class="k">售價</div>
+    <div class="v">@Model.Price.ToString("N0") @Model.CurrencyCode</div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="k">存量（Info）</div>
+    <div class="v">@Model.ShipmentQuantity</div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="k">供應商</div>
+    <div class="v">@(!string.IsNullOrWhiteSpace(Model.SupplierName) ? Model.SupplierName : "—")</div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="k">商品代碼</div>
+    <div class="v">@(!string.IsNullOrWhiteSpace(Model.ProductCode) ? Model.ProductCode : "—")</div>
+  </div>
+</div>
+
+<hr class="my-3" />
+
+@if (Model.ProductType == "game")
+{
+        <!-- Game 區 -->
+        <h6 class="mb-2">Game</h6>
+        <div class="row g-3">
+            <div class="col-md-3 col-6"><div class="k">平台ID</div><div class="v">@Model.PlatformId</div></div>
+            <div class="col-md-3 col-6"><div class="k">平台名稱</div><div class="v">@Model.PlatformName</div></div>
+            <div class="col-md-3 col-6"><div class="k">遊戲類型</div><div class="v">@Model.GameType</div></div>
+
+            <div class="col-md-3 col-12">
+                <div class="k">下載連結</div>
+                <div class="v">
+                    @if (!string.IsNullOrWhiteSpace(Model.DownloadLink))
+                    {
+                        <a href="@Model.DownloadLink" target="_blank">@Model.DownloadLink</a>
+                    }
+                    else
+                    {
+                        @:<span class="text-muted">—</span>
+                    }
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="k">說明</div>
+                <div class="v">@(!string.IsNullOrWhiteSpace(Model.GameDescription) ? Model.GameDescription : "—")</div>
+            </div>
+        </div>
+}
+else
+{
+  <!-- Non-Game 區塊 -->
+  <h6 class="mb-2">Non-Game</h6>
+  <div class="row g-3 kv">
+    <div class="col-md-3 col-6"><div class="k">周邊分類</div><div class="v">@Model.MerchTypeName</div></div>
+    <div class="col-md-3 col-6"><div class="k">數位代碼</div><div class="v">@Model.DigitalCode</div></div>
+    <div class="col-md-3 col-6"><div class="k">尺寸</div><div class="v">@Model.Size</div></div>
+    <div class="col-md-3 col-6"><div class="k">顏色</div><div class="v">@Model.Color</div></div>
+    <div class="col-md-3 col-6"><div class="k">重量</div><div class="v">@Model.Weight</div></div>
+    <div class="col-md-3 col-6"><div class="k">尺寸(mm/cm)</div><div class="v">@Model.Dimensions</div></div>
+    <div class="col-md-3 col-6"><div class="k">材質</div><div class="v">@Model.Material</div></div>
+    <div class="col-md-3 col-6"><div class="k">庫存（Detail）</div><div class="v">@Model.StockQuantity</div></div>
+    <div class="col-12">
+      <div class="k">說明</div>
+      <div class="v">@(!string.IsNullOrWhiteSpace(Model.OtherDescription) ? Model.OtherDescription : "—")</div>
+    </div>
+  </div>
+}
+
+@if (Model.Images != null && Model.Images.Count > 0)
+{
+  <hr class="my-3" />
+  <h6 class="mb-2">圖片</h6>
+  <div class="row g-2">
+    @foreach (var im in Model.Images)
+    {
+      <div class="col-4 col-md-3 col-lg-2">
+        <img class="img-thumb" src="@im.Url" alt="@im.Alt" />
+      </div>
+    }
+  </div>
+}
+
+    @* <div class="mt-3 small text-muted">
+        建立：@Model.ProductCreatedAt.ToString("yyyy/MM/dd HH:mm")（@Model.ProductCreatedBy）
+        @if (Model.ProductUpdatedAt.HasValue)
+        {
+            @:　|　更新：@Model.ProductUpdatedAt.Value.ToString("yyyy/MM/dd HH:mm")（@Model.ProductUpdatedBy）
+        }
+    </div> *@
+</div>

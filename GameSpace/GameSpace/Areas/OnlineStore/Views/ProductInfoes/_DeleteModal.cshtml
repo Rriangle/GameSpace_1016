@@ -1,0 +1,22 @@
+﻿@model GameSpace.Areas.OnlineStore.ViewModels.ProductInfoFormVM
+
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">下架確認</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="post" class="js-ajax-form" action="@Url.Action("DeleteConfirmed","ProductInfoes", new { area="OnlineStore" })">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <input type="hidden" name="productId" value="@Model.ProductId" />
+                <p>確定要將 <strong>@Model.ProductName</strong>（#@Model.ProductId）下架嗎？</p>
+                <p class="text-muted small">此為軟刪除：Info 與 Detail 的 <code>is_active</code> 會一併改為 0。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" class="btn btn-danger">確認下架</button>
+            </div>
+        </form>
+    </div>
+</div>
