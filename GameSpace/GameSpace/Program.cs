@@ -22,6 +22,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 // ---- 型別別名（避免撞名）----
 using IMuteFilterAlias = GameSpace.Areas.social_hub.Services.IMuteFilter;
@@ -29,6 +31,7 @@ using INotificationServiceAlias = GameSpace.Areas.social_hub.Services.INotificat
 using ManagerPermissionServiceAlias = GameSpace.Areas.social_hub.Permissions.ManagerPermissionService;
 using MuteFilterAlias = GameSpace.Areas.social_hub.Services.MuteFilter;
 using NotificationServiceAlias = GameSpace.Areas.social_hub.Services.NotificationService;
+using GameSpace.Areas.MiniGame.config;
 
 namespace GameSpace
 {
@@ -46,10 +49,13 @@ namespace GameSpace
 				?? builder.Configuration.GetConnectionString("GameSpacedatabase")
 				?? throw new InvalidOperationException("Connection string 'GameSpace' not found.");
 
-			// ========== 2) DbContexts ==========
-			builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(identityConn));
-			builder.Services.AddDbContext<GameSpacedatabaseContext>(opt => opt.UseSqlServer(gameSpaceConn));
-			builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+            // ========== 2) DbContexts ==========
+            builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(identityConn));
+            builder.Services.AddDbContext<GameSpacedatabaseContext>(opt => opt.UseSqlServer(gameSpaceConn));
+            builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+            // Register MiniGame area services to use shared GameSpacedatabaseContext
+            builder.Services.AddMiniGameServices(builder.Configuration);
 
 			// ========== 3) Identity ==========
 			builder.Services
@@ -62,7 +68,12 @@ namespace GameSpace
 				o.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
 				// 防止瀏覽器回放舊頁（切帳號時 Sidebar 不會回放舊 HTML）
 				o.Filters.Add(new ResponseCacheAttribute { NoStore = true, Location = ResponseCacheLocation.None });
+			})
+			.AddJsonOptions(o =>
+			{
+				o.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
 			});
+			builder.Services.AddWebEncoders();
 			builder.Services.AddRazorPages();
 
 			// ========== 5) SignalR ==========
@@ -172,6 +183,14 @@ namespace GameSpace
 			// ========== 11) 授權政策（需要就用） ==========
 			builder.Services.AddAuthorization(options =>
 			{
+				// ⭐ MiniGame Area 必要的 AdminOnly 政策
+				options.AddPolicy("AdminOnly", policy =>
+				{
+					policy.RequireAuthenticatedUser();
+					policy.AddAuthenticationSchemes("AdminCookie");
+				});
+
+				// 保留現有政策
 				options.AddPolicy("CanManageShopping", p => p.RequireClaim("perm:Shopping", "true"));
 				options.AddPolicy("CanAdmin", p => p.RequireClaim("perm:Admin", "true"));
 				options.AddPolicy("CanMessage", p => p.RequireClaim("perm:Message", "true"));
@@ -222,7 +241,7 @@ namespace GameSpace
 
 			app.MapControllerRoute(
 				name: "areas",
-				pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+				pattern: "{area:exists}/{controller=AdminHome}/{action=Index}/{id?}");
 
 			app.MapControllerRoute(
 				name: "default",
@@ -240,7 +259,69 @@ namespace GameSpace
 			});
 
 			// ========== 16) 啟動 ==========
+			// ⚠️ 修復：註解掉 PetSkinColorCostSetting 初始化，因為模型已移除 Table 屬性
+			// 初始化將由 InMemoryPetSkinColorCostSettingService 在首次使用時自動進行
+			/*
+			try
+			{
+				using var scope = app.Services.CreateScope();
+				var petSkinColorService = scope.ServiceProvider.GetRequiredService<GameSpace.Areas.MiniGame.Services.IPetSkinColorCostSettingService>();
+				
+				// 檢查是否已有資料，如果沒有則初始化預設資料
+				var existingSettings = await petSkinColorService.GetAllAsync();
+				if (!existingSettings.Any())
+				{
+					// 初始化預設資料（使用 InMemory 服務的內部方法）
+					// 由於 ResetToDefaultAsync 不是介面方法，我們手動創建預設資料
+					var defaultSettings = new[]
+					{
+						new GameSpace.Areas.MiniGame.Models.PetSkinColorCostSetting 
+						{ 
+							Id = 1, 
+							ColorName = "經典紅色", 
+							ColorCode = "#FF0000", 
+							RequiredPoints = 2000, 
+							IsActive = true, 
+							CreatedAt = DateTime.UtcNow, 
+							Description = "預設種子資料 - 經典紅色" 
+						},
+						new GameSpace.Areas.MiniGame.Models.PetSkinColorCostSetting 
+						{ 
+							Id = 2, 
+							ColorName = "經典藍色", 
+							ColorCode = "#0000FF", 
+							RequiredPoints = 2000, 
+							IsActive = true, 
+							CreatedAt = DateTime.UtcNow, 
+							Description = "預設種子資料 - 經典藍色" 
+						},
+						new GameSpace.Areas.MiniGame.Models.PetSkinColorCostSetting 
+						{ 
+							Id = 3, 
+							ColorName = "經典綠色", 
+							ColorCode = "#00FF00", 
+							RequiredPoints = 2000, 
+							IsActive = true, 
+							CreatedAt = DateTime.UtcNow, 
+							Description = "預設種子資料 - 經典綠色" 
+						}
+					};
+
+					foreach (var setting in defaultSettings)
+					{
+						await petSkinColorService.CreateAsync(setting);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				// 記錄錯誤但不影響應用程序啟動
+				Console.WriteLine($"初始化寵物膚色成本設定時發生錯誤: {ex.Message}");
+			}
+			*/
+
 			await app.RunAsync();
 		}
 	}
 }
+

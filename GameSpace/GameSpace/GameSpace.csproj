@@ -10,12 +10,16 @@
   <ItemGroup>
     <Compile Remove="Areas\OnlineStore\Views\ProductInfoes2\**" />
     <Compile Remove="TEST\**" />
+    <Compile Remove="**\docs\backups\**" />
     <Content Remove="Areas\OnlineStore\Views\ProductInfoes2\**" />
     <Content Remove="TEST\**" />
+    <Content Remove="**\docs\backups\**" />
     <EmbeddedResource Remove="Areas\OnlineStore\Views\ProductInfoes2\**" />
     <EmbeddedResource Remove="TEST\**" />
+    <EmbeddedResource Remove="**\docs\backups\**" />
     <None Remove="Areas\OnlineStore\Views\ProductInfoes2\**" />
     <None Remove="TEST\**" />
+    <None Remove="**\docs\backups\**" />
   </ItemGroup>
 
   <ItemGroup>

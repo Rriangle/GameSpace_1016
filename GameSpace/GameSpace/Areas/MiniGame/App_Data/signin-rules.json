@@ -1,0 +1,102 @@
+﻿[
+  {
+    "id": 1,
+    "dayNumber": 1,
+    "points": 10,
+    "experience": 5,
+    "hasCoupon": true,
+    "couponTypeCode": null,
+    "description": "第一天簽到獎勵",
+    "isActive": true
+  },
+  {
+    "id": 2,
+    "dayNumber": 2,
+    "points": 10,
+    "experience": 5,
+    "hasCoupon": false,
+    "couponTypeCode": null,
+    "description": "第二天簽到獎勵",
+    "isActive": true
+  },
+  {
+    "id": 3,
+    "dayNumber": 3,
+    "points": 15,
+    "experience": 8,
+    "hasCoupon": false,
+    "couponTypeCode": null,
+    "description": "第三天簽到獎勵",
+    "isActive": true
+  },
+  {
+    "id": 4,
+    "dayNumber": 4,
+    "points": 15,
+    "experience": 8,
+    "hasCoupon": false,
+    "couponTypeCode": null,
+    "description": "第四天簽到獎勵",
+    "isActive": true
+  },
+  {
+    "id": 5,
+    "dayNumber": 5,
+    "points": 20,
+    "experience": 10,
+    "hasCoupon": false,
+    "couponTypeCode": null,
+    "description": "第五天簽到獎勵",
+    "isActive": true
+  },
+  {
+    "id": 6,
+    "dayNumber": 6,
+    "points": 20,
+    "experience": 10,
+    "hasCoupon": false,
+    "couponTypeCode": null,
+    "description": "第六天簽到獎勵",
+    "isActive": true
+  },
+  {
+    "id": 7,
+    "dayNumber": 7,
+    "points": 30,
+    "experience": 15,
+    "hasCoupon": true,
+    "couponTypeCode": "WEEK_BONUS",
+    "description": "第七天簽到獎勵 \u002B 週獎勵優惠券",
+    "isActive": true
+  },
+  {
+    "id": 8,
+    "dayNumber": 14,
+    "points": 50,
+    "experience": 25,
+    "hasCoupon": true,
+    "couponTypeCode": "TWO_WEEK_BONUS",
+    "description": "連續簽到 14 天獎勵",
+    "isActive": true
+  },
+  {
+    "id": 9,
+    "dayNumber": 21,
+    "points": 80,
+    "experience": 40,
+    "hasCoupon": true,
+    "couponTypeCode": "THREE_WEEK_BONUS",
+    "description": "連續簽到 21 天獎勵",
+    "isActive": true
+  },
+  {
+    "id": 10,
+    "dayNumber": 30,
+    "points": 150,
+    "experience": 75,
+    "hasCoupon": true,
+    "couponTypeCode": "MONTH_BONUS",
+    "description": "連續簽到 30 天獎勵（滿月獎勵）",
+    "isActive": true
+  }
+]
